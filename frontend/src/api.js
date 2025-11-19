@@ -12,10 +12,28 @@ export async function apiRegister(username, password) {
     body: JSON.stringify({ username, password }),
   });
 
-  const data = await res.json();
+  //const data = await res.json();
+  //if (!res.ok) {
+  //  throw new Error(data.error || '注册失败');
+  //}
+  //return data;
+  // 先拿原始文本
+  const text = await res.text();
+
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    // 不是 JSON，直接把返回内容开头展示出来
+    throw new Error(
+      `服务器返回的不是 JSON，开头内容是：${text.slice(0, 100)}`
+    );
+  }
+
   if (!res.ok) {
     throw new Error(data.error || '注册失败');
   }
+
   return data;
 }
 
@@ -27,10 +45,28 @@ export async function apiLogin(username, password) {
     body: JSON.stringify({ username, password }),
   });
 
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.error || '登录失败');
+  //const data = await res.json();
+  //if (!res.ok) {
+  //  throw new Error(data.error || '登录失败');
+  //}
+  //return data;
+  // 先拿原始文本
+  const text = await res.text();
+
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    // 不是 JSON，直接把返回内容开头展示出来
+    throw new Error(
+      `服务器返回的不是 JSON，开头内容是：${text.slice(0, 100)}`
+    );
   }
+
+  if (!res.ok) {
+    throw new Error(data.error || '注册失败');
+  }
+
   return data;
 }
 
