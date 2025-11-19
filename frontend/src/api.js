@@ -4,6 +4,36 @@
 const API_BASE =
   import.meta.env.VITE_API_BASE || 'http://localhost:3000';
 
+// ★ 新增：上传图片接口
+export async function apiUploadImage(file, token) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch(`${API_BASE}/upload/image`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  const text = await res.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(
+      `服务器返回的不是 JSON，开头内容是：${text.slice(0, 100)}`
+    );
+  }
+
+  if (!res.ok) {
+    throw new Error(data.error || '上传失败');
+  }
+
+  return data; // { url: 'xxxx' }
+}
+
 // 注册
 export async function apiRegister(username, password) {
   const res = await fetch(`${API_BASE}/auth/register`, {
@@ -12,11 +42,6 @@ export async function apiRegister(username, password) {
     body: JSON.stringify({ username, password }),
   });
 
-  //const data = await res.json();
-  //if (!res.ok) {
-  //  throw new Error(data.error || '注册失败');
-  //}
-  //return data;
   // 先拿原始文本
   const text = await res.text();
 
@@ -45,11 +70,6 @@ export async function apiLogin(username, password) {
     body: JSON.stringify({ username, password }),
   });
 
-  //const data = await res.json();
-  //if (!res.ok) {
-  //  throw new Error(data.error || '登录失败');
-  //}
-  //return data;
   // 先拿原始文本
   const text = await res.text();
 
@@ -64,7 +84,8 @@ export async function apiLogin(username, password) {
   }
 
   if (!res.ok) {
-    throw new Error(data.error || '注册失败');
+    // ★ 修正：这里之前写成了“注册失败”，改为“登录失败”
+    throw new Error(data.error || '登录失败');
   }
 
   return data;
@@ -127,3 +148,4 @@ export async function apiGetPosts({ offset = 0, limit = 10 } = {}) {
   }
   return data;
 }
+

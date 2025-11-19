@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { apiCreatePost, apiUpdatePost, apiGetPost } from '../api';
+import { apiCreatePost, apiUpdatePost, apiGetPost, apiUploadImage } from '../api'; // ★ 新增 apiUploadImage
+
+// ★ 新增：引入 ReactQuill 及样式，用于富文本编辑器
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 /**
  * 发帖 / 编辑页
@@ -49,6 +53,30 @@ function PostEditor({ token }) {
       .split('\n')
       .map((s) => s.trim())
       .filter(Boolean); // 过滤空行
+  }
+
+  // ★ 新增：处理文件选择并上传图片，拿到 URL 后填入图片 URL 文本框
+  async function handleFileChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      if (!token) {
+        setError('请先登录后再上传图片');
+        return;
+      }
+
+      const result = await apiUploadImage(file, token);
+      // 将返回的图片地址追加到 imageText，每行一个
+      setImageText((prev) =>
+        prev ? `${prev}\n${result.url}` : result.url
+      );
+    } catch (err) {
+      setError(err.message || '上传图片失败');
+    } finally {
+      // 允许再次选择同一个文件
+      e.target.value = '';
+    }
   }
 
   async function handleSubmit(e) {
@@ -109,14 +137,16 @@ function PostEditor({ token }) {
         >
           <div>
             <label style={{ display: 'block', marginBottom: 4 }}>
-              文本内容：
+              文本内容（支持富文本）：
             </label>
-            <textarea
-              rows={5}
+
+            {/* ★ 修改：用 ReactQuill 替代原来的 textarea */}
+            <ReactQuill
+              theme="snow"
               value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="写点什么吧..."
-              style={{ width: '100%' }}
+              onChange={setContent}
+              placeholder="写点什么吧，支持加粗、标题、列表等..."
+              style={{ height: 220, marginBottom: 32 }}
             />
           </div>
 
@@ -128,12 +158,28 @@ function PostEditor({ token }) {
               rows={4}
               value={imageText}
               onChange={(e) => setImageText(e.target.value)}
-              placeholder={'例如：\nhttps://example.com/image1.jpg\nhttps://example.com/image2.jpg'}
+              placeholder={
+                '例如：\nhttps://example.com/image1.jpg\nhttps://example.com/image2.jpg'
+              }
               style={{ width: '100%' }}
             />
             <p style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
-              暂时用图片地址来模拟上传；之后有时间可以再做真正的文件上传功能。
+              你可以直接填写网络图片地址，或者下方上传本地图片，系统会自动生成图片 URL 填入这里。
             </p>
+
+            {/* ★ 新增：选择图片文件并上传 */}
+            <div style={{ marginTop: 8 }}>
+              <label style={{ fontSize: 14 }}>上传图片文件：</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: 'block', marginTop: 4 }}
+              />
+              <p style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+                上传成功后会自动把图片地址追加到上方的“图片 URL”文本框中。
+              </p>
+            </div>
           </div>
 
           <button type="submit" disabled={loading}>
@@ -157,3 +203,4 @@ function PostEditor({ token }) {
 }
 
 export default PostEditor;
+

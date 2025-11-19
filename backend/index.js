@@ -5,10 +5,38 @@ const cors = require('cors');
 const crypto = require('crypto'); // 用来生成随机 token
 const db = require('./db'); // 数据库
 
+// ★ 新增：用于文件上传和路径处理
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// ★ 新增：配置上传目录和 Multer
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
+// 静态文件访问：让 /uploads 下的文件可以直接通过 URL 访问
+app.use('/uploads', express.static(uploadDir));
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    const base =
+      Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, base + ext);
+  },
+});
+
+const upload = multer({ storage });
 
 // ======== 内存中的 token 存储（简单实现） ========
 /**
@@ -109,7 +137,9 @@ function authMiddleware(req, res, next) {
   const authHeader = req.headers['authorization'];
 
   if (!authHeader) {
-    return res.status(401).json({ error: '未登录（缺少 Authorization 头）' });
+    return res
+      .status(401)
+      .json({ error: '未登录（缺少 Authorization 头）' });
   }
 
   // 预期格式：Authorization: Bearer tokenxxx
@@ -122,13 +152,36 @@ function authMiddleware(req, res, next) {
   const user = tokens[token];
 
   if (!user) {
-    return res.status(401).json({ error: '无效或过期的 token，请重新登录' });
+    return res
+      .status(401)
+      .json({ error: '无效或过期的 token，请重新登录' });
   }
 
   // 把用户信息挂到 req 上，后面接口可以用
   req.user = user;
   next();
 }
+
+// ★ 新增：图片上传接口（需要登录）
+// POST /upload/image
+// headers: Authorization: Bearer token
+// body: form-data, field: file
+app.post(
+  '/upload/image',
+  authMiddleware,
+  upload.single('file'),
+  (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: '未收到文件' });
+    }
+
+    const url = `${req.protocol}://${req.get('host')}/uploads/${
+      req.file.filename
+    }`;
+
+    return res.json({ url });
+  }
+);
 
 // ======== 发帖接口（需要登录） ========
 // POST /posts
@@ -141,9 +194,10 @@ app.post('/posts', authMiddleware, (req, res) => {
     return res.status(400).json({ error: '内容不能为空' });
   }
 
-  const imagesJson = images && Array.isArray(images)
-    ? JSON.stringify(images)
-    : JSON.stringify([]);
+  const imagesJson =
+    images && Array.isArray(images)
+      ? JSON.stringify(images)
+      : JSON.stringify([]);
 
   const sql =
     'INSERT INTO posts (user_id, content, images) VALUES (?, ?, ?)';
@@ -193,9 +247,10 @@ app.put('/posts/:id', authMiddleware, (req, res) => {
     return res.status(400).json({ error: '内容不能为空' });
   }
 
-  const imagesJson = images && Array.isArray(images)
-    ? JSON.stringify(images)
-    : JSON.stringify([]);
+  const imagesJson =
+    images && Array.isArray(images)
+      ? JSON.stringify(images)
+      : JSON.stringify([]);
 
   // 简单做一个“只能改自己的帖子”
   const findSql = 'SELECT * FROM posts WHERE id = ?';
@@ -210,7 +265,9 @@ app.put('/posts/:id', authMiddleware, (req, res) => {
     }
 
     if (row.user_id !== req.user.id) {
-      return res.status(403).json({ error: '没有权限修改这条内容' });
+      return res
+        .status(403)
+        .json({ error: '没有权限修改这条内容' });
     }
 
     const updateSql = `
@@ -234,12 +291,17 @@ app.put('/posts/:id', authMiddleware, (req, res) => {
       db.get(selectSql, [postId], (err3, updatedRow) => {
         if (err3) {
           console.error('查询更新后的帖子失败:', err3);
-          return res.json({ message: '修改成功，但获取详情失败', id: postId });
+          return res.json({
+            message: '修改成功，但获取详情失败',
+            id: postId,
+          });
         }
 
         const result = {
           ...updatedRow,
-          images: updatedRow.images ? JSON.parse(updatedRow.images) : [],
+          images: updatedRow.images
+            ? JSON.parse(updatedRow.images)
+            : [],
         };
 
         return res.json(result);
@@ -284,7 +346,6 @@ app.get('/posts', (req, res) => {
     res.json(result);
   });
 });
-
 
 // GET /posts/:id
 app.get('/posts/:id', (req, res) => {
@@ -343,5 +404,8 @@ app.use((err, req, res, next) => {
 //const PORT = 3000;
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Backend server is running on http://localhost:${PORT}`);
+  console.log(
+    `Backend server is running on http://localhost:${PORT}`
+  );
 });
+
