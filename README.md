@@ -1,4 +1,4 @@
-1. 项目简介
+1. 项目简介<br>
    项目名称：简易资讯移动端（HTML5 形式）<br>
    技术栈：React + Vite（前端）、Node.js + Express + SQLite（后端）<br>
    主要功能：<br>
