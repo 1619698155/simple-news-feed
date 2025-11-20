@@ -6,6 +6,30 @@ import { apiGetPosts } from '../api';
 
 const PAGE_SIZE = 5; // 每次加载 5 条
 
+// ★ 新增：去掉 HTML 标签，把 <p>您好</p> 变成 “您好”
+function stripHtml(html) {
+  if (!html) return '';
+  return html.replace(/<[^>]+>/g, ''); // 简单正则清理所有标签
+}
+
+// ★ 新增：把 SQLite 的 UTC 时间字符串转成本地时间字符串（解决差 8 小时）
+function formatDateTime(utcString) {
+  if (!utcString) return '';
+
+  // SQLite 默认格式 "YYYY-MM-DD HH:MM:SS"，没有时区信息
+  // 我们加一个 'Z' 告诉 JS 这是 UTC，再转换成本地时间
+  const iso = utcString.replace(' ', 'T') + 'Z';
+  const date = new Date(iso);
+
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 function PostList() {
   const [posts, setPosts] = useState([]);
   const [offset, setOffset] = useState(0);
@@ -45,61 +69,70 @@ function PostList() {
       {posts.length === 0 && !loading && <p>暂无内容，快去发布一条吧～</p>}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {posts.map((post) => (
-          <div
-            key={post.id}
-            className="card"
-            style={{
-              border: '1px solid #eee',
-              borderRadius: 8,
-              padding: 12,
-            }}
-          >
+        {posts.map((post) => {
+          // ★ 新增：从富文本 HTML 中抽取纯文本，用作列表摘要
+          const plainText = stripHtml(post.content || '');
+          const preview =
+            plainText.length > 60
+              ? plainText.slice(0, 60) + '...'
+              : plainText;
+
+          return (
             <div
+              key={post.id}
+              className="card"
               style={{
-                fontSize: 12,
-                color: '#666',
-                marginBottom: 4,
-                display: 'flex',
-                justifyContent: 'space-between',
+                border: '1px solid #eee',
+                borderRadius: 8,
+                padding: 12,
               }}
             >
-              <span>
-                发布人：{post.author_name || `用户#${post.user_id}`}
-              </span>
-              <span>{post.created_at}</span>
-            </div>
-
-            <Link
-              to={`/post/${post.id}`}
-              style={{ textDecoration: 'none', color: 'inherit' }}
-            >
-              <p
+              <div
                 style={{
-                  fontSize: 14,
-                  margin: '4px 0 8px',
+                  fontSize: 12,
+                  color: '#666',
+                  marginBottom: 4,
+                  display: 'flex',
+                  justifyContent: 'space-between',
                 }}
               >
-                {post.content.length > 60
-                  ? post.content.slice(0, 60) + '...'
-                  : post.content}
-              </p>
+                <span>
+                  发布人：{post.author_name || `用户#${post.user_id}`}
+                </span>
+                {/* ★ 修改：用 formatDateTime 显示本地时间，解决差 8 小时问题 */}
+                <span>{formatDateTime(post.created_at)}</span>
+              </div>
 
-              {post.images && post.images.length > 0 && (
-                <img
-                  src={post.images[0]}
-                  alt="缩略图"
+              <Link
+                to={`/post/${post.id}`}
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
+                <p
                   style={{
-                    width: '100%',
-                    maxHeight: 200,
-                    objectFit: 'cover',
-                    borderRadius: 6,
+                    fontSize: 14,
+                    margin: '4px 0 8px',
                   }}
-                />
-              )}
-            </Link>
-          </div>
-        ))}
+                >
+                  {/* ★ 修改：用预处理好的 plainText 摘要，而不是直接 post.content */}
+                  {preview}
+                </p>
+
+                {post.images && post.images.length > 0 && (
+                  <img
+                    src={post.images[0]}
+                    alt="缩略图"
+                    style={{
+                      width: '100%',
+                      maxHeight: 200,
+                      objectFit: 'cover',
+                      borderRadius: 6,
+                    }}
+                  />
+                )}
+              </Link>
+            </div>
+          );
+        })}
       </div>
 
       {error && <p style={{ color: 'red', marginTop: 8 }}>{error}</p>}
@@ -124,3 +157,4 @@ function PostList() {
 }
 
 export default PostList;
+
