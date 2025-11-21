@@ -33,6 +33,21 @@
     后端（Node.js + Express）：读写<br>
     SQLite 数据库文件（database.sqlite）：存储用户和短图文数据<br>
 
+4. 网站进入方式<br>
+4.1 当前调试方法：<br>
+（1）在其中一个terminal：<br>
+   cd ./backend<br>
+   npm run dev<br>
+   此时终端应该会出现Backend server is running on http://localhost:3000，说明后端部分调试成功。<br>
+（2）在另一个terminal：<br>
+   cd ./frontend<br>
+   npm run dev<br>
+   此时终端会出现Local:http://localhost:5173/，点击ctrl+鼠标单机会直接弹出网站，如果网页显示正常说明前端部分调试成功。<br>
+4.2 后续计划方案：<br>
+
+4.3 当前效果实例：<br>
+<img width="2217" height="1317" alt="ef09adb483988c41f7c6bce55a411b2f" src="https://github.com/user-attachments/assets/f4edcd54-cc26-4f24-a5f2-7e60182e5698" /><br>
+
 4. 数据库设计<br>
    4.1 users表<br>
    字段名	      类型	      说明<br>
@@ -125,3 +140,5 @@
     使用 JWT、密码哈希、安全加固等<br>
     
 。。。未完待续<br>
+
+PS：问题记录与解决
