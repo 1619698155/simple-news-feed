@@ -33,41 +33,70 @@
     后端（Node.js + Express）：读写<br>
     SQLite 数据库文件（database.sqlite）：存储用户和短图文数据<br>
 
-4. 网站进入方式<br>
-4.1 当前调试方法：<br>
-（1）在其中一个terminal：<br>
-   cd ./backend<br>
+4. 软件配置方式
+4.1 软件平台配置：VS Code 或 Trae AI
+4.2 安装 Node.js 和 Git
+（1）去官网上下载并安装软件
+（2）安装完成后打开终端输入：
+   node -v
+   npm -v
+   git --version
+   若能显示版本号则说明安装成功。后续可通过git上传文件至github中。
+（3）创建项目根目录 + Git 仓库：
+   mkdir simple-news-feed
+   cd simple-news-feed
+   git init
+   此时有一个空目录 simple-news-feed，已经初始化了 Git 仓库。
+（3）初始化后端 backend：（Node.js + Express）
+   mkdir backend
+   cd backend
+   npm init -y
+   npm install express cors sqlite3
+（4）初始化前端 frontend：（Vite + React）
+   回到之前的simple-news-feed文件夹，之后运行：
+   npm create vite@latest frontend -- --template react
+   之后按提示输入：
+      Project name: frontend（默认回车即可）
+      其他选项直接回车。
+   然后进入前端目录安装依赖：
+   cd frontend
+   npm install   
+
+6. 网站进入方式<br>
+5.1 当前调试方法：<br>
+（1）在其中一个terminal：（在simple-news-feed目录）<br>
+   cd backend<br>
    npm run dev<br>
    此时终端应该会出现Backend server is running on http://localhost:3000，说明后端部分调试成功。<br>
-（2）在另一个terminal：<br>
-   cd ./frontend<br>
+（2）在另一个terminal：（在simple-news-feed目录）<br>
+   cd frontend<br>
    npm run dev<br>
    此时终端会出现Local:http://localhost:5173/，点击ctrl+鼠标单机会直接弹出网站，如果网页显示正常说明前端部分调试成功。<br>
-4.2 后续计划方案：<br>
+5.2 后续计划方案：<br>
 
-4.3 当前效果实例：<br>
+5.3 当前效果实例：<br>
 <img width="2217" height="1317" alt="ef09adb483988c41f7c6bce55a411b2f" src="https://github.com/user-attachments/assets/f4edcd54-cc26-4f24-a5f2-7e60182e5698" /><br>
 
-4. 数据库设计<br>
-   4.1 users表<br>
+6. 数据库设计<br>
+   6.1 用户表<br>
    字段名	      类型	      说明<br>
-   id	        INTEGER	    主键，自增<br>
-   username	  TEXT	      用户名，唯一<br>
-   password	  TEXT	      密码（明文存储，仅 Demo 使用）<br>
+   id	         INTEGER	   主键，自增<br>
+   username	   TEXT	      用户名，唯一<br>
+   password	   TEXT	      密码（明文存储，仅 Demo 使用）<br>
    created_at	DATETIME    注册时间<br>
 
-   4.2 posts表<br>
+   6.2 文章表<br>
    字段名	      类型	      说明<br>
-   id	        INTEGER	    主键，自增<br>
-   user_id	    INTEGER	    发布人 id（关联 users.id）<br>
-   content	    TEXT	      文本内容<br>
-   images	    TEXT	      图片 URL 数组的 JSON 字符串<br>
-   created_at	DATETIME	  创建时间<br>
-   updated_at	DATETIME	  最后更新时间<br>
+   id	         INTEGER	   主键，自增<br>
+   user_id	   INTEGER	   发布人 id（关联 users.id）<br>
+   content	   TEXT	      文本内容<br>
+   images	   TEXT	      图片 URL 数组的 JSON 字符串<br>
+   created_at	DATETIME	   创建时间<br>
+   updated_at	DATETIME	   最后更新时间<br>
 
-5. 接口设计<br>
+7. 接口设计<br>
 主要接口示例：<br>
-   5.1 用户注册<br>
+   7.1 用户注册<br>
        URL：POST /auth/register<br>
        请求体：<br>
        {<br>
@@ -82,7 +111,7 @@
                "username": "test"<br>
            }<br>
        }<br>
-   5.2 用户登录<br>
+   7.2 用户登录<br>
        URL：POST /auth/login<br>
        请求体：<br>
        {<br>
@@ -99,7 +128,7 @@
            }<br>
        }<br>
        前端将 token 存在 localStorage，后续接口通过 Authorization: Bearer token 传递。<br>
-   5.3 获取信息流列表<br>
+   7.3 获取信息流列表<br>
        URL：GET /posts?offset=0&limit=10<br>
        响应（成功）：<br>
        [<br>
@@ -113,9 +142,9 @@
                "updated_at": "2025-11-19 10:00:00"<br>
            }<br>
        ]<br>
-   5.4 获取内容详情<br>
+   7.4 获取内容详情<br>
        URL：GET /posts/:id<br>
-   5.5 发布短图文<br>
+   7.5 发布短图文<br>
        URL：POST /posts<br>
        请求头：Authorization: Bearer <token><br>
        请求体：<br>
@@ -124,7 +153,7 @@
            "images": ["https://..."]<br>
        }<br>
 
-6. 前端主要页面说明<br>
+8. 前端主要页面说明<br>
     首页 /：显示当前登录用户信息 + 信息流列表（PostList）。<br>
     登录 /login：输入用户名密码，调用 /auth/login，保存 token。<br>
     注册 /register：调用 /auth/register。<br>
@@ -132,7 +161,7 @@
     详情 /post/:id：展示全文和所有图片；如果是作者，提供“编辑”入口。<br>
     编辑 /post/:id/edit：加载原内容后编辑并保存。<br>
 
-7. 后续优化方向（对应“挑战”部分）<br>
+9. 后续优化方向（对应“挑战”部分）<br>
     富文本编辑器<br>
     AI 自动打标签与相关推荐<br>
     下拉刷新、性能优化（LCP、FPS）<br>
