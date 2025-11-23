@@ -12,10 +12,10 @@
 2.1 前端<br>
     框架：React 18 + Vite<br>
     路由：react-router-dom<br>
-    状态管理：React 内置 useState / useEffect<br>
+    状态管理：React 内置 useState / useEffect（Hooks）<br>
     样式：原生 CSS + 少量内联样式，针对移动端优化（meta viewport、自适应宽度）<br>
     选择原因：<br>
-        React 生态成熟、资料丰富。<br>
+        利用自定义 hook 将可复用的“状态逻辑 / 副作用逻辑”抽离出来。<br>
         Vite 开发体验快、配置简单。<br>
         原生 CSS 足够满足本项目的 UI 需求。<br>
 2.2 后端<br>
@@ -33,34 +33,34 @@
     后端（Node.js + Express）：读写<br>
     SQLite 数据库文件（database.sqlite）：存储用户和短图文数据<br>
 
-4. 软件配置方式
-4.1 软件平台配置：VS Code 或 Trae AI
-4.2 安装 Node.js 和 Git
-（1）去官网上下载并安装软件
-（2）安装完成后打开终端输入：
-   node -v
-   npm -v
-   git --version
-   若能显示版本号则说明安装成功。后续可通过git上传文件至github中。
-（3）创建项目根目录 + Git 仓库：
-   mkdir simple-news-feed
-   cd simple-news-feed
-   git init
-   此时有一个空目录 simple-news-feed，已经初始化了 Git 仓库。
-（3）初始化后端 backend：（Node.js + Express）
-   mkdir backend
-   cd backend
-   npm init -y
-   npm install express cors sqlite3
-（4）初始化前端 frontend：（Vite + React）
-   回到之前的simple-news-feed文件夹，之后运行：
-   npm create vite@latest frontend -- --template react
-   之后按提示输入：
-      Project name: frontend（默认回车即可）
-      其他选项直接回车。
-   然后进入前端目录安装依赖：
-   cd frontend
-   npm install   
+4. 软件配置方式<br>
+4.1 软件平台配置：VS Code 或 Trae AI<br>
+4.2 安装 Node.js 和 Git<br>
+（1）去官网上下载并安装软件<br>
+（2）安装完成后打开终端输入：<br>
+   node -v<br>
+   npm -v<br>
+   git --version<br>
+   若能显示版本号则说明安装成功。后续可通过git上传文件至github中。<br>
+（3）创建项目根目录 + Git 仓库：<br>
+   mkdir simple-news-feed<br>
+   cd simple-news-feed<br>
+   git init<br>
+   此时有一个空目录 simple-news-feed，已经初始化了 Git 仓库。<br>
+（3）初始化后端 backend：（Node.js + Express）<br>
+   mkdir backend<br>
+   cd backend<br>
+   npm init -y<br>
+   npm install express cors sqlite3<br>
+（4）初始化前端 frontend：（Vite + React）<br>
+   回到之前的simple-news-feed文件夹，之后运行：<br>
+   npm create vite@latest frontend -- --template react<br>
+   之后按提示输入：<br>
+      Project name: frontend（默认回车即可）<br>
+      其他选项直接回车。<br>
+   然后进入前端目录安装依赖：<br>
+   cd frontend<br>
+   npm install<br>   
 
 6. 网站进入方式<br>
 5.1 当前调试方法：<br>
@@ -152,8 +152,12 @@
            "content": "今天写了一个简易资讯系统",<br>
            "images": ["https://..."]<br>
        }<br>
+未来接口拓展：（计划）<br>
+   POST /posts/:id/tags/ai-generate：调用 AI 模型对内容打标签<br>
+   GET /posts?tag=xxx：根据标签筛选信息流<br>
+   GET /topics/recommend?postId=xxx：根据内容推荐话题<br>
 
-8. 前端主要页面说明<br>
+9. 前端主要页面说明<br>
     首页 /：显示当前登录用户信息 + 信息流列表（PostList）。<br>
     登录 /login：输入用户名密码，调用 /auth/login，保存 token。<br>
     注册 /register：调用 /auth/register。<br>
@@ -161,7 +165,7 @@
     详情 /post/:id：展示全文和所有图片；如果是作者，提供“编辑”入口。<br>
     编辑 /post/:id/edit：加载原内容后编辑并保存。<br>
 
-9. 后续优化方向（对应“挑战”部分）<br>
+10. 后续优化方向（对应“挑战”部分）<br>
     富文本编辑器<br>
     AI 自动打标签与相关推荐<br>
     下拉刷新、性能优化（LCP、FPS）<br>
@@ -170,4 +174,4 @@
     
 。。。未完待续<br>
 
-PS：问题记录与解决
+PS：问题记录与解决<br>
