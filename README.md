@@ -2,10 +2,10 @@
    项目名称：简易资讯移动端（HTML5 形式）<br>
    技术栈：React + Vite（前端）、Node.js + Express + SQLite（后端）<br>
    主要功能：<br>
-          用户注册 / 登录 / 退出登录<br>
-          短图文发布、编辑<br>
-          内容详情页展示<br>
-          信息流列表（按时间倒序、加载更多）<br>
+         用户注册 / 登录 / 退出登录<br>
+         短图文发布、编辑<br>
+         内容详情页展示<br>
+         信息流列表（按时间倒序、加载更多）<br>
     目标：完成一个可用的简易资讯产品 Demo，并部署上线可扫码访问。<br>
 
 2. 技术选型<br>
@@ -15,17 +15,17 @@
     状态管理：React 内置 useState / useEffect<br>
     样式：原生 CSS + 少量内联样式，针对移动端优化（meta viewport、自适应宽度）<br>
     选择原因：<br>
-           React 是目前前端领域最主流的视图框架之一，React Router功能强大且易于使用。<br>
-           Vite 开发体验快、配置简单。<br>
-           原生 CSS 能够满足本项目的 UI 需求。<br>
+          React 是目前前端领域最主流的视图框架之一，React Router功能强大且易于使用。<br>
+          Vite 开发体验快、配置简单。<br>
+          原生 CSS 能够满足本项目的 UI 需求。<br>
 2.2 后端<br>
     运行时：Node.js<br>
     框架：Express<br>
     数据库：SQLite（文件型数据库）<br>
     选择原因：<br>
-            Node.js 允许你使用 JavaScript 编写后端代码，便于实现全栈操作。<br>
-            Express 提供强大的路由，中间件等功能，避免引入过多抽象，能快速构建后端API。<br>
-            SQLite 免安装、跨平台，作为暂定的数据库方案。<br>
+          Node.js 允许你使用 JavaScript 编写后端代码，便于实现全栈操作。<br>
+          Express 提供强大的路由，中间件等功能，避免引入过多抽象，能快速构建后端API。<br>
+          SQLite 免安装、跨平台，作为暂定的数据库方案。<br>
 
 3. 软件配置方式<br>
 3.1 软件平台配置：VS Code 或 Trae AI<br>
