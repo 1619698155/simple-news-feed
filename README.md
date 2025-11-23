@@ -32,39 +32,39 @@
 3.2 安装 Node.js 和 Git<br>
 （1）去官网上下载并安装软件<br>
 （2）安装完成后打开终端输入：<br>
-   node -v<br>
-   npm -v<br>
-   git --version<br>
+      node -v<br>
+      npm -v<br>
+      git --version<br>
    若能显示版本号则说明安装成功。后续可通过git上传文件至github中。<br>
 （3）创建项目根目录 + Git 仓库：<br>
-   mkdir simple-news-feed<br>
-   cd simple-news-feed<br>
-   git init<br>
+      mkdir simple-news-feed<br>
+      cd simple-news-feed<br>
+      git init<br>
    此时有一个空目录 simple-news-feed，已经初始化了 Git 仓库。<br>
 （3）初始化后端 backend：（Node.js + Express）<br>
-   mkdir backend<br>
-   cd backend<br>
-   npm init -y<br>
-   npm install express cors sqlite3<br>
+      mkdir backend<br>
+      cd backend<br>
+      npm init -y<br>
+      npm install express cors sqlite3<br>
 （4）初始化前端 frontend：（Vite + React）<br>
    回到之前的simple-news-feed文件夹，之后运行：<br>
-   npm create vite@latest frontend -- --template react<br>
+      npm create vite@latest frontend -- --template react<br>
    之后按提示输入：<br>
       Project name: frontend（默认回车即可）<br>
       其他选项直接回车。<br>
    然后进入前端目录安装依赖：<br>
-   cd frontend<br>
-   npm install<br>   
+      cd frontend<br>
+      npm install<br>   
 
 4. 网站进入方式<br>
 4.1 当前调试方法：<br>
 （1）在其中一个terminal：（在simple-news-feed目录）<br>
-   cd backend<br>
-   npm run dev<br>
+      cd backend<br>
+      npm run dev<br>
    此时终端应该会出现Backend server is running on http://localhost:3000，说明后端部分调试成功。<br>
 （2）在另一个terminal：（在simple-news-feed目录）<br>
-   cd frontend<br>
-   npm run dev<br>
+      cd frontend<br>
+      npm run dev<br>
    此时终端会出现Local:http://localhost:5173/，点击ctrl+鼠标单击会直接弹出网站，如果网页显示正常说明前端部分调试成功。<br>
 4.2 当前效果实例：<br>
 <img width="2217" height="1317" alt="ef09adb483988c41f7c6bce55a411b2f" src="https://github.com/user-attachments/assets/f4edcd54-cc26-4f24-a5f2-7e60182e5698" /><br>
