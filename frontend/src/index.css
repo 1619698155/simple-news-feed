@@ -1,11 +1,12 @@
-/* frontend/src/index.css */
+/* 全局样式重置 */
 
 *,
-*::before,
+*::before, 
 *::after {
-  box-sizing: border-box;
+  box-sizing: border-box; /* 使用 border-box 盒模型 */
 }
-
+/* 基础字体和背景色 */
+/* 优先使用系统默认字体，设置行高为字体大小1.5倍，默认字体颜色深灰色，背景颜色浅灰色 */
 :root {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
@@ -13,12 +14,12 @@
   color: #111827;
   background-color: #f3f4f6;
 }
-
+/* 让 body 和 #root 占满全屏高度 */
 body {
   margin: 0;
   min-height: 100vh;
 }
-
+/* 让 #root 占满全屏高度 */
 #root {
   min-height: 100vh;
 }
@@ -32,13 +33,13 @@ body {
 
 /* 顶部导航 */
 nav {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background-color: #ffffffcc;
-  backdrop-filter: blur(6px);
-  padding: 8px 4px;
-  border-bottom: 1px solid #e5e7eb;
+  position: sticky;                       /* 粘性定位，滚动时固定在顶部 */
+  top: 0;                                 /* 距离顶部0 */
+  z-index: 10;                            /* 确保在其他内容之上 */
+  background-color: #ffffffcc;          /* 半透明白色背景 */
+  backdrop-filter: blur(6px);             /* 背景模糊效果 */
+  padding: 8px 4px;                       /* 内边距 */
+  border-bottom: 1px solid #e5e7eb;     /* 底部边框 */
 }
 
 /* 链接 */
@@ -48,43 +49,43 @@ a {
 
 /* 按钮基础样式 */
 button {
-  cursor: pointer;
-  border-radius: 999px;
-  border: none;
-  padding: 8px 16px;
-  background: linear-gradient(135deg, #2563eb, #3b82f6);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 500;
-  transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.15s ease;
+  cursor: pointer;                                                               /* 鼠标悬停时显示手型光标 */
+  border-radius: 999px;                                                          /* 圆角按钮 */
+  border: none;                                                                  /* 无边框 */
+  padding: 8px 16px;                                                             /* 内边距 */
+  background: linear-gradient(135deg, #2563eb, #3b82f6);                     /* 渐变背景 */
+  color: #fff;                                                                 /* 白色文字 */
+  font-size: 14px;                                                               /* 14px 字体大小 */
+  font-weight: 500;                                                              /* 中等字体粗细 */
+  transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.15s ease;     /* 平滑过渡效果 */
 }
-
+/* 禁用状态的按钮样式：半透明，默认光标 */
 button[disabled] {
   opacity: 0.6;
   cursor: default;
 }
-
+/* 鼠标悬停时的按钮样式 */
 button:not([disabled]):active {
-  transform: scale(0.97);
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+  transform: scale(0.97);                                   /* 按钮按下时缩小 */
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);            /* 添加阴影效果 */
 }
 
 /* 输入框 / 文本域 */
 input,
 textarea {
-  width: 100%;
+  width: 100%;                                                 /* 宽度100% */
   padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid #d1d5db;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;  /* 平滑过渡效果 */
 }
-
+/* 输入框 / 文本域 聚焦时的样式 */
 input:focus,
 textarea:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 1px #2563eb33;
+  box-shadow: 0 0 0 1px #2563eb33;  
 }
 
 /* 卡片通用样式 */
@@ -116,12 +117,12 @@ textarea:focus {
 
 /* 针对窄屏做一点间距优化 */
 @media (max-width: 480px) {
-  .app-container {
-    padding: 12px;
+  .app-container {             /* 页面主容器 */
+    padding: 12px;             /* 减小内边距 */
   }
 
-  nav {
-    padding-inline: 0;
+  nav {                        /* 顶部导航 */
+    padding-inline: 0;         /* 去掉左右内边距 */
   }
 }
 

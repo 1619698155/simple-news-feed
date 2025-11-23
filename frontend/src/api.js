@@ -1,14 +1,14 @@
-// frontend/src/api.js
+// 封装后端请求
 
 //const API_BASE = 'http://localhost:3000';
 const API_BASE =
   import.meta.env.VITE_API_BASE || 'http://localhost:3000';
 
-// ★ 新增：上传图片接口
+// 上传图片接口
 export async function apiUploadImage(file, token) {
   const formData = new FormData();
   formData.append('file', file);
-
+  // 发送网络请求
   const res = await fetch(`${API_BASE}/upload/image`, {
     method: 'POST',
     headers: {
@@ -16,7 +16,7 @@ export async function apiUploadImage(file, token) {
     },
     body: formData,
   });
-
+  // 判断服务器返回的是不是有效的 JSON 格式
   const text = await res.text();
   let data = {};
   try {
@@ -42,7 +42,7 @@ export async function apiRegister(username, password) {
     body: JSON.stringify({ username, password }),
   });
 
-  // 先拿原始文本
+  // 判断服务器返回的是不是有效的 JSON 格式
   const text = await res.text();
 
   let data = {};
@@ -64,13 +64,13 @@ export async function apiRegister(username, password) {
 
 // 登录
 export async function apiLogin(username, password) {
-  const res = await fetch(`${API_BASE}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password }),
+  const res = await fetch(`${API_BASE}/auth/login`, { // 发送登录请求
+    method: 'POST', // 使用 Fetch API 进行 POST 请求
+    headers: { 'Content-Type': 'application/json' }, // 设置请求头，指定内容类型为 JSON
+    body: JSON.stringify({ username, password }), // 将用户名和密码转换为 JSON 字符串作为请求体
   });
 
-  // 先拿原始文本
+  // 判断服务器返回的是不是有效的 JSON 格式
   const text = await res.text();
 
   let data = {};
@@ -84,7 +84,6 @@ export async function apiLogin(username, password) {
   }
 
   if (!res.ok) {
-    // ★ 修正：这里之前写成了“注册失败”，改为“登录失败”
     throw new Error(data.error || '登录失败');
   }
 
@@ -137,7 +136,7 @@ export async function apiUpdatePost({ id, content, images, token }) {
   return data;
 }
 
-// 获取帖子列表
+// 获取帖子列表，制定分页策略
 export async function apiGetPosts({ offset = 0, limit = 10 } = {}) {
   const res = await fetch(
     `${API_BASE}/posts?offset=${offset}&limit=${limit}`

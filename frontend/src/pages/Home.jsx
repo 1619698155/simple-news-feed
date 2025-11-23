@@ -1,4 +1,4 @@
-// frontend/src/pages/Home.jsx
+// React 组件：首页
 
 import { Link } from 'react-router-dom';
 import PostList from './PostList';

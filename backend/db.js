@@ -31,7 +31,7 @@ db.serialize(() => {
     )
   `);
 
-  // 可选：插入一点测试数据（只在表为空时插入）
+  // 插入测试数据（只在表为空时插入）
   db.get('SELECT COUNT(*) AS count FROM posts', (err, row) => {
     if (err) {
       console.error('检查 posts 数量失败:', err);

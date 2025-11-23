@@ -1,10 +1,13 @@
+/* 根容器样式 */
+/* 最大宽度1280像素，水平居中，内边距2rem，设置容器内文本和行内元素水平居中 */
 #root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
 }
-
+/* logo样式，选择所有class="logo"的元素 */
+/* logo高度6em，内边距1.5rem；当filter属性发生变化时会在 300 毫秒内平滑完成 */
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -12,12 +15,12 @@
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em #646cffaa); /* 鼠标悬停时添加蓝色阴影 */
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em #61dafbaa); /* React logo 鼠标悬停时添加青色阴影 */
 }
-
+/* 定义logo旋转动画，从0度旋转到360度 */
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -26,17 +29,17 @@
     transform: rotate(360deg);
   }
 }
-
+/* 应用旋转动画到第二个链接内的logo元素上，动画无限循环，持续时间20秒，线性匀速 */
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
   }
 }
-
+/* 卡片样式，内边距2em */
 .card {
   padding: 2em;
 }
-
+/* 文档链接样式，字体颜色为灰色 */
 .read-the-docs {
   color: #888;
 }

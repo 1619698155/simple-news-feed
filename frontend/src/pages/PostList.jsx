@@ -1,4 +1,4 @@
-// frontend/src/pages/PostList.jsx
+// React 组件：帖子列表页，支持分页加载
 
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -6,18 +6,18 @@ import { apiGetPosts } from '../api';
 
 const PAGE_SIZE = 5; // 每次加载 5 条
 
-// ★ 新增：去掉 HTML 标签，把 <p>您好</p> 变成 “您好”
+// 去掉 HTML 标签，把 <p>您好</p> 变成 “您好”
 function stripHtml(html) {
   if (!html) return '';
   return html.replace(/<[^>]+>/g, ''); // 简单正则清理所有标签
 }
 
-// ★ 新增：把 SQLite 的 UTC 时间字符串转成本地时间字符串（解决差 8 小时）
+// 把 SQLite 的 UTC 时间字符串转成本地时间字符串（解决差 8 小时）
 function formatDateTime(utcString) {
   if (!utcString) return '';
 
   // SQLite 默认格式 "YYYY-MM-DD HH:MM:SS"，没有时区信息
-  // 我们加一个 'Z' 告诉 JS 这是 UTC，再转换成本地时间
+  // 加一个 'Z' 告诉 JS 这是 UTC，再转换成本地时间
   const iso = utcString.replace(' ', 'T') + 'Z';
   const date = new Date(iso);
 
@@ -53,7 +53,15 @@ function PostList() {
       if (data.length < PAGE_SIZE) {
         setHasMore(false);
       }
-      setPosts((prev) => [...prev, ...data]);
+
+      // 修改：避免重复加载内容
+      setPosts((prev) => {
+        const newPosts = data.filter(
+          (newPost) => !prev.some((post) => post.id === newPost.id)
+        );
+        return [...prev, ...newPosts]; // 新的帖子加到列表中
+      });
+
       setOffset((prev) => prev + data.length);
     } catch (e) {
       setError(e.message || '加载失败');
@@ -70,7 +78,7 @@ function PostList() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {posts.map((post) => {
-          // ★ 新增：从富文本 HTML 中抽取纯文本，用作列表摘要
+          // 从富文本 HTML 中抽取纯文本，用作列表摘要
           const plainText = stripHtml(post.content || '');
           const preview =
             plainText.length > 60
@@ -99,7 +107,7 @@ function PostList() {
                 <span>
                   发布人：{post.author_name || `用户#${post.user_id}`}
                 </span>
-                {/* ★ 修改：用 formatDateTime 显示本地时间，解决差 8 小时问题 */}
+                {/* 修改：用 formatDateTime 显示本地时间，解决差 8 小时问题 */}
                 <span>{formatDateTime(post.created_at)}</span>
               </div>
 
@@ -113,7 +121,7 @@ function PostList() {
                     margin: '4px 0 8px',
                   }}
                 >
-                  {/* ★ 修改：用预处理好的 plainText 摘要，而不是直接 post.content */}
+                  {/* 修改：用预处理好的 plainText 摘要，而不是直接 post.content */}
                   {preview}
                 </p>
 
@@ -157,4 +165,5 @@ function PostList() {
 }
 
 export default PostList;
+
 

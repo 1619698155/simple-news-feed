@@ -1,21 +1,21 @@
 // backend/index.js
 
-const express = require('express');
-const cors = require('cors');
+const express = require('express'); // 导入 Express 模块
+const cors = require('cors'); // 导入 CORS 模块
 const crypto = require('crypto'); // 用来生成随机 token
 const db = require('./db'); // 数据库
 
-// ★ 新增：用于文件上传和路径处理
+// 用于文件上传和路径处理
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
-
+// 创建一个 Express 应用实例
 const app = express();
+// 将 CORS 中间件注册为全局中间件, 注册 Express 内置的中间件
+app.use(cors()); // 支持跨域
+app.use(express.json()); // 解析请求体中格式为 json 的数据。解析后的数据会被转换为 JavaScript 对象
 
-app.use(cors());
-app.use(express.json());
-
-// ★ 新增：配置上传目录和 Multer
+// 配置上传目录和 Multer
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
@@ -46,9 +46,9 @@ const upload = multer({ storage });
  */
 const tokens = {};
 
-// ======== 公共接口：测试用 ========
-app.get('/ping', (req, res) => {
-  res.json({ message: 'pong' });
+// 定义路由，测试公共接口 
+app.get('/ping', (req, res) => { // 定义路由，指定当服务器收到一个对路径 /ping的 GET 请求时执行后面的箭头函数。req是包含请求信息的对象，res是用于构建和发送响应的对象
+  res.json({ message: 'pong' }); // 路由处理函数内部的方法调用，使用 res.json()方法发送一个 JSON 格式的响应给客户端
 });
 
 // ======== 注册接口 ========
@@ -400,10 +400,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ======== 启动服务器 ========
+// 启动服务器 
 //const PORT = 3000;
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, () => { // 调用 app.listen 方法，使服务器开始监听指定的 PORT 端口
   console.log(
     `Backend server is running on http://localhost:${PORT}`
   );

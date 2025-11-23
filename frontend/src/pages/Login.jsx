@@ -1,4 +1,4 @@
-// frontend/src/pages/Login.jsx
+// React 组件：登录页面
 
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -41,13 +41,13 @@ function Login({ onLoginSuccess }) {
     <div className="card">
       <h2>登录</h2>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <input
+        <input // 输入框用于用户名
           type="text"
           placeholder="用户名"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
-        <input
+        <input // 输入框用于密码
           type="password"
           placeholder="密码"
           value={password}

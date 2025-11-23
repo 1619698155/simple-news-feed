@@ -1,10 +1,10 @@
-// frontend/src/pages/PostEditor.jsx
+// React 组件：发帖 / 编辑页
 
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { apiCreatePost, apiUpdatePost, apiGetPost, apiUploadImage } from '../api'; // ★ 新增 apiUploadImage
+import { apiCreatePost, apiUpdatePost, apiGetPost, apiUploadImage } from '../api'; // apiUploadImage
 
-// ★ 新增：引入 ReactQuill 及样式，用于富文本编辑器
+// 引入 ReactQuill 及样式，用于富文本编辑器
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -36,7 +36,7 @@ function PostEditor({ token }) {
       try {
         const data = await apiGetPost(id);
         setContent(data.content || '');
-        const imgs = Array.isArray(data.images) ? data.images : [];
+        const imgs = Array.isArray(data.images) ? data.images : []; // 将图片数组转换为文本框可显示的格式
         setImageText(imgs.join('\n'));
       } catch (e) {
         setError(e.message || '加载原内容失败');
@@ -47,7 +47,7 @@ function PostEditor({ token }) {
 
     fetchPost();
   }, [id, isEditMode]);
-
+  // 从多行文本中解析出图片 URL 数组
   function parseImagesFromText(text) {
     return text
       .split('\n')
@@ -55,13 +55,13 @@ function PostEditor({ token }) {
       .filter(Boolean); // 过滤空行
   }
 
-  // ★ 新增：处理文件选择并上传图片，拿到 URL 后填入图片 URL 文本框
+  // 处理文件选择并上传图片，拿到 URL 后填入图片 URL 文本框
   async function handleFileChange(e) {
-    const file = e.target.files[0];
+    const file = e.target.files[0]; // 获取用户选择的文件
     if (!file) return;
 
     try {
-      if (!token) {
+      if (!token) { // 检查用户是否已登录
         setError('请先登录后再上传图片');
         return;
       }
@@ -74,23 +74,23 @@ function PostEditor({ token }) {
     } catch (err) {
       setError(err.message || '上传图片失败');
     } finally {
-      // 允许再次选择同一个文件
+      // 最后清空文件输入框的值，允许再次选择同一个文件
       e.target.value = '';
     }
   }
-
+  // 提交表单，创建或更新帖子
   async function handleSubmit(e) {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+    e.preventDefault(); // 阻止默认表单提交行为（页面刷新）
+    setLoading(true); // 提交时禁用按钮，重置状态：设置加载中，清空错误和成功信息
+    setError(''); 
     setSuccessMsg('');
 
-    const images = parseImagesFromText(imageText);
+    const images = parseImagesFromText(imageText); // 将文本框中的图片URL字符串转换为数组
 
     try {
       let result;
       if (isEditMode) {
-        result = await apiUpdatePost({
+        result = await apiUpdatePost({ // 编辑模式，提交数据，调用更新接口
           id,
           content,
           images,
@@ -106,7 +106,8 @@ function PostEditor({ token }) {
         setSuccessMsg('发布成功！即将返回首页...');
       }
 
-      // 简化：先跳转回首页；等第六天实现详情页后可以跳 /post/:id
+      // 简化：先跳转回首页；等后续实现详情页后可以跳 /post/:id
+      // 成功提交后，显示成功消息，并设置一个定时器，在800毫秒后跳转回首页
       setTimeout(() => {
         navigate('/');
       }, 800);
@@ -115,17 +116,17 @@ function PostEditor({ token }) {
     } catch (e) {
       setError(e.message || '提交失败');
     } finally {
-      setLoading(false);
+      setLoading(false); // 重置加载状态：最后无论成功与否，都取消加载状态
     }
   }
 
   return (
     <div>
-      <h2>{isEditMode ? '编辑短图文' : '发布短图文'}</h2>
+      <h2>{isEditMode ? '编辑短图文' : '发布短图文'}</h2> {/* 根据模式显示标题 */}
 
       {loadingPost ? (
         <p>正在加载原内容...</p>
-      ) : (
+      ) : ( // 显示表单
         <form
           onSubmit={handleSubmit}
           style={{
@@ -140,7 +141,7 @@ function PostEditor({ token }) {
               文本内容（支持富文本）：
             </label>
 
-            {/* ★ 修改：用 ReactQuill 替代原来的 textarea */}
+            {/* 用 ReactQuill 替代原来的 textarea */}
             <ReactQuill
               theme="snow"
               value={content}
@@ -167,7 +168,7 @@ function PostEditor({ token }) {
               你可以直接填写网络图片地址，或者下方上传本地图片，系统会自动生成图片 URL 填入这里。
             </p>
 
-            {/* ★ 新增：选择图片文件并上传 */}
+            {/* 选择图片文件并上传 */}
             <div style={{ marginTop: 8 }}>
               <label style={{ fontSize: 14 }}>上传图片文件：</label>
               <input
