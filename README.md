@@ -59,8 +59,8 @@
 4. 网站进入方式<br>
 4.1 当前调试方法：<br>
 （1）在其中一个terminal：（在simple-news-feed目录）<br>
-      cd backend<br>
-      npm run dev<br>
+         cd backend<br>
+         npm run dev<br>
    此时终端应该会出现Backend server is running on http://localhost:3000，说明后端部分调试成功。<br>
 （2）在另一个terminal：（在simple-news-feed目录）<br>
       cd frontend<br>
