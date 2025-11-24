@@ -173,7 +173,7 @@ PS：问题（bug）记录与解决<br>
 1. react-quill 组件安装出错<br>
    解决方法：确认 React 版本问题，必须是 16/17/18 版本之一，最好是 React18。版本设置可以在 package.json 里修改。<br>
             或者 react 版本过高了，可以降到 18 版本（在fontend目录输入npm install react@18 react-dom@18指令）再重新进行安装（npm install react-quill）。<br>
-2. 发布的文字前后带有<br>
+2. 发布的文字前后带有标签符<br>
    原因：列表页直接显示 {post.content} ， 所以页面就真的把HTML标签符当成普通文字输出了<br>
    解决方法：<br>
       首页显示卡片：剥离 HTML 标签，如在 PostList.jsx 文件中<br>
