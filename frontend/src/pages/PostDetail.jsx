@@ -4,11 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { apiGetPost } from '../api';
 
-// 去掉 HTML 标签，把 <p>您好</p> 变成 “您好”
-function stripHtml(html) {
-  if (!html) return '';
-  return html.replace(/<[^>]+>/g, ''); // 简单正则清理所有标签
-}
+// 注：之前使用的stripHtml函数已移除，现在直接使用富文本渲染
 
 function PostDetail({ currentUser }) {
   const { id } = useParams();
@@ -50,63 +46,117 @@ function PostDetail({ currentUser }) {
     currentUser && currentUser.id === post.user_id; // 判断当前用户是否为内容作者
 
   return (
-    <div> {/* 内容详情容器 */}
-      <button // 返回按钮
-        onClick={() => navigate(-1)} // 点击返回上一页
-        style={{ marginBottom: 12 }} // 返回按钮样式
-      >
-        ⬅ 返回
-      </button>
-
-      <h2>短图文详情</h2>
-
-      <div
-        style={{ // 作者和发布时间样式
-          fontSize: 12,
-          color: '#666',
-          marginTop: 8,
-          marginBottom: 8,
-        }}
-      >
-        <div>
-          发布人：
-          <strong>{post.author_name || `用户#${post.user_id}`}</strong>
-        </div>
-        <div>发布时间：{post.created_at}</div>
-      </div>
-
-      {/* 清理掉多余的 HTML 标签 */}
-      <p style={{ fontSize: 15, lineHeight: 1.6 }}>
-        {stripHtml(post.content)}
-      </p>
-
-      {post.images && post.images.length > 0 && ( // 显示图片列表
-        <div
+    <div style={{ backgroundColor: 'white', minHeight: '100vh' }}> {/* 内容详情容器 */}
+      {/* 作者信息区域 - 类似图一的发布者信息栏 */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        padding: '12px 16px',
+        borderBottom: '1px solid #f0f0f0'
+      }}>
+        {/* 返回按钮 - 移动到原头像占位的圆形位置 */}
+        <button 
+          onClick={() => navigate(-1)} 
           style={{
-            marginTop: 12,
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            backgroundColor: '#f0f0f0',
+            border: 'none',
+            marginRight: '12px',
             display: 'flex',
-            flexDirection: 'column',
-            gap: 8,
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '18px',
+            cursor: 'pointer'
           }}
         >
-          {post.images.map((img, idx) => (
-            <img
-              key={idx}
-              src={img}
-              alt={`图片${idx + 1}`}
-              style={{
-                width: '100%',
-                borderRadius: 8,
-                objectFit: 'cover',
-              }}
-            />
-          ))}
+          ←
+        </button>
+        
+        {/* 作者信息 */}
+        <div style={{ flex: 1 }}>
+          <div style={{ 
+            fontWeight: 'bold', 
+            fontSize: '16px',
+            marginBottom: '2px'
+          }}>
+            {post.author_name || `用户#${post.user_id}`}
+          </div>
+          <div style={{ fontSize: '12px', color: '#999' }}>
+            {post.created_at}
+          </div>
+        </div>
+        
+        {/* 关注按钮 */}
+        <button style={{
+          backgroundColor: '#ff3333',
+          color: 'white',
+          border: 'none',
+          borderRadius: '16px',
+          padding: '6px 16px',
+          fontSize: '14px',
+          fontWeight: 'bold',
+          cursor: 'pointer'
+        }}>
+          关注
+        </button>
+      </div>
+
+      {/* 内容层 - 同时包含文字和图片，保持富文本的原始结构 */}
+      <div style={{ padding: '16px' }}>
+        {/* 使用dangerouslySetInnerHTML渲染完整的富文本内容，包括文字和图片 */}
+        <div
+          style={{ 
+            fontSize: '16px', 
+            lineHeight: 1.8,
+            color: '#333'
+          }}
+          dangerouslySetInnerHTML={{ 
+            __html: (post.content || '') + '<style>img{max-width:100%;height:auto;display:block;}</style>'
+          }}
+        />
+      </div>
+
+      {/* 推荐词条区域 - 在内容层下方显示已获取的推荐词条 */}
+      {post?.topics && post.topics.length > 0 && (
+        <div style={{ 
+          padding: '16px',
+          borderTop: '1px solid #f0f0f0'
+        }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {post.topics.map((topic, index) => (
+              <span 
+                key={index} 
+                style={{
+                  backgroundColor: '#f0f0f0',
+                  padding: '4px 12px',
+                  borderRadius: '16px',
+                  fontSize: '13px',
+                  color: '#666'
+                }}
+              >
+                #{topic}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 
       {isAuthor && ( // 如果是作者，显示编辑链接
-        <div style={{ marginTop: 16 }}>
-          <Link to={`/post/${post.id}/edit`}>✏️ 编辑这条内容</Link>
+        <div style={{ 
+          margin: '16px',
+          padding: '12px',
+          backgroundColor: '#f9f9f9',
+          borderRadius: '8px',
+          textAlign: 'center'
+        }}>
+          <Link to={`/post/${post.id}/edit`} style={{
+            color: '#1890ff',
+            textDecoration: 'none'
+          }}>
+            ✏️ 编辑这条内容
+          </Link>
         </div>
       )}
     </div>

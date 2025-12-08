@@ -1,8 +1,8 @@
-// React 组件：帖子列表页，支持分页加载和下拉刷新
+// 推荐页面组件 - 基于当前用户个性化推荐的帖子
 
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { apiGetPosts } from '../api';
+import { apiGetRecommendedPosts } from '../api';
 
 // 添加CSS样式以支持旋转动画
 const style = document.createElement('style');
@@ -34,7 +34,32 @@ function formatDateTime(utcString) {
   });
 }
 
-function PostList() {
+// 提取内容的第一句话
+function getFirstSentence(content) {
+  if (!content) return '';
+  
+  // 移除HTML标签
+  const plainText = content.replace(/<[^>]+>/g, '');
+  
+  // 查找第一个句号、问号或感叹号
+  const sentenceEndIndex = plainText.search(/[。？！]/);
+  
+  // 如果找到了句末标点，就返回第一个句子
+  if (sentenceEndIndex !== -1) {
+    return plainText.substring(0, sentenceEndIndex + 1);
+  }
+  
+  // 如果没有句末标点，就返回第一个词或短语（以空格分隔）
+  const firstWordIndex = plainText.search(/\s/);
+  if (firstWordIndex !== -1) {
+    return plainText.substring(0, firstWordIndex);
+  }
+  
+  // 如果都没有，就返回全部内容
+  return plainText;
+}
+
+function Recommend({ user }) {
   const [posts, setPosts] = useState([]);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -133,11 +158,17 @@ function PostList() {
   }, [loading, hasMore, isDragging, dragDistance, refreshing]); // 依赖项确保逻辑正确更新
 
   // 通用数据加载函数，用于代码复用
-  async function fetchPosts(currentOffset, isRefresh = false) {
+  async function fetchRecommendedPosts(currentOffset, isRefresh = false) {
     try {
-      console.log(`${isRefresh ? '刷新' : '加载更多'}帖子：offset=${currentOffset}, limit=${PAGE_SIZE}`);
-      const data = await apiGetPosts({ offset: currentOffset, limit: PAGE_SIZE });
-      console.log(`API返回数据：${data.length}条，ID=${data.map(p => p.id).join(', ')}`);
+      console.log(`${isRefresh ? '刷新' : '加载更多'}推荐帖子：offset=${currentOffset}, limit=${PAGE_SIZE}`);
+      // 确保userId是字符串类型
+      const userId = user && user.id ? String(user.id) : null;
+      const data = await apiGetRecommendedPosts({ 
+        offset: currentOffset, 
+        limit: PAGE_SIZE,
+        userId: userId
+      });
+      console.log(`API返回推荐数据：${data.length}条，ID=${data.map(p => p.id).join(', ')}`);
       
       return data;
     } catch (e) {
@@ -153,14 +184,14 @@ function PostList() {
     
     try {
       // 重新加载第一页数据
-      const data = await fetchPosts(0, true);
+      const data = await fetchRecommendedPosts(0, true);
       
       // 更新状态 - 使用函数式更新确保获取最新状态
       setPosts(() => data);
       setOffset(() => data.length);
       setHasMore(() => data.length >= PAGE_SIZE);
       
-      console.log(`刷新成功，加载了${data.length}条新数据`);
+      console.log(`刷新成功，加载了${data.length}条推荐数据`);
     } catch (e) {
       setError(e.message);
       console.error('刷新失败:', e);
@@ -181,12 +212,12 @@ function PostList() {
     setError('');
 
     try {
-      const data = await fetchPosts(currentOffset, false);
+      const data = await fetchRecommendedPosts(currentOffset, false);
       
       // 只有当返回空数组时才认为没有更多数据
       if (data.length === 0) {
         setHasMore(false);
-        console.log('没有更多数据了');
+        console.log('没有更多推荐数据了');
       } else {
         // 使用函数式更新确保获取最新状态
         setPosts((prevPosts) => {
@@ -261,128 +292,117 @@ function PostList() {
       </div>
       
       <div style={{ marginTop: refreshing || isDragging ? -10 : 0, transition: 'margin-top 0.3s ease' }}>
-        <h3 className="post-title"></h3>
+        <h3>为你推荐</h3>
       
-      {/* 话题推荐区域已移到每个帖子下方显示 */}
+      {posts.length === 0 && !loading && <p>暂无推荐内容，稍后再来看看吧～</p>}
 
-      {posts.length === 0 && !loading && <p className="empty-post-message">暂无内容，快去发布一条吧～</p>}
-
-      <div className="post-container" style={{ 
+      <div style={{ 
         display: 'flex', 
         flexDirection: 'column', 
-        gap: 12
+        gap: 12,
+        width: '50%', // 65% - 15% = 50%
+        marginLeft: '15%' // 左端在页面左侧15%处
       }}>
         {posts.map((post) => {
-          // 现在直接使用dangerouslySetInnerHTML渲染富文本内容
-          // 省略了纯文本预览的生成代码
-
           return (
             <div
               key={post.id}
               className="card"
               style={{
-                height: '20vh', // 帖子模块高度为页面20%
+                border: '1px solid #eee',
                 borderRadius: 8,
                 padding: 12,
                 display: 'flex', // 使用flex布局来分离文字和图片
+                flexDirection: 'column',
                 position: 'relative',
               }}
             >
               <Link
-                to={`/post/${post.id}`}
+                to={post.external_link ? post.external_link : `#`}
+                target={post.external_link ? '_blank' : '_self'}
                 style={{
                   textDecoration: 'none',
                   color: 'inherit',
                   display: 'flex',
                   width: '100%',
+                  marginBottom: '12px', // 与下方元素保持一定距离
                 }}
               >
                 {/* 文字内容占左侧80% */}
-                <div style={{ width: '80%', paddingRight: '8px', display: 'flex', flexDirection: 'column' }}>
-                  {/* 标题或第一句话提取函数 */}
-                  {(() => {
-                    if (post.title) return post.title;
-                    if (!post.content) return '';
-                    
-                    // 移除HTML标签
-                    const plainText = post.content.replace(/<[^>]*>/g, '');
-                    
-                    // 提取第一个词语或短语的逻辑
-                    let firstWord = '';
-                    
-                    // 1. 先按换行符分割，取第一行
-                    let firstLine = plainText.split('\n')[0].trim();
-                    
-                    // 2. 按空格分割，取第一个词语
-                    if (firstLine.includes(' ')) {
-                      firstWord = firstLine.split(' ')[0].trim();
-                    } 
-                    // 3. 如果没有空格，按中文标点分割（如，。！？）
-                    else if (firstLine.match(/[，。！？]/)) {
-                      firstWord = firstLine.split(/[，。！？]/)[0].trim();
-                    } 
-                    // 4. 如果都没有，取前几个字符（最多20个）
-                    else {
-                      firstWord = firstLine.slice(0, 20).trim();
-                    }
-                    
-                    return firstWord;
-                  })()}
-                  
-                  {/* 空行 - 与上方文字保持距离 */}
-                  <div style={{ marginBottom: '8px' }}></div>
-                  
-                  {/* 帖子关联话题显示，在发布人和发布时间上方 */}
-                  {post.topics && post.topics.length > 0 && (
-                    <div style={{ 
-                      marginBottom: '4px',
-                      maxWidth: '100%',
-                      wordBreak: 'break-all'
-                    }}>
-                      {post.topics.map((topic, index) => (
-                        <span 
-                          key={index} 
-                          style={{
-                            backgroundColor: '#f0f0f0',
-                            padding: '2px 8px',
-                            borderRadius: '12px',
-                            fontSize: '11px',
-                            color: '#333',
-                            marginRight: '4px',
-                            marginBottom: '4px',
-                            display: 'inline-block'
-                          }}
-                        >
-                          #{topic}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {/* 发布人和发布时间 */}
-                  <div style={{ fontSize: 12, color: '#999', marginTop: 'auto' }}>
-                    {post.author_name || `用户#${post.user_id}`}{'     '}{formatDateTime(post.created_at)}
+                <div style={{ width: '80%', paddingRight: '8px' }}>
+                  {/* 列表页只显示第一句话 */}
+                  <div
+                    style={{
+                      fontSize: 14,
+                      marginTop: '4px',
+                    }}
+                  >
+                    {getFirstSentence(post.content || '')}
                   </div>
                 </div>
 
-                {/* 图片内容占右侧20%，上下对齐模块边缘 */}
-                {post.images && post.images.length > 0 ? (
-                  <div style={{ width: '20%', height: '100%', display: 'flex', alignItems: 'stretch' }}>
+                {/* 图片内容占右侧20% */}
+                {post.images && post.images.length > 0 && (
+                  <div style={{ width: '20%', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end' }}>
                     <img
                       src={post.images[0]}
                       alt="缩略图"
                       style={{
                         width: '100%',
-                        height: '100%',
+                        maxHeight: 80,
                         objectFit: 'cover',
                         borderRadius: 6,
                       }}
                     />
                   </div>
-                ) : (
-                  <div style={{ width: '20%' }}></div>
                 )}
               </Link>
+              
+              {/* 帖子关联话题显示 - 移到下方 */}
+              {post.topics && post.topics.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
+                  {post.topics.map((topic, index) => (
+                    <span 
+                      key={index} 
+                      style={{
+                        backgroundColor: '#f0f0f0',
+                        padding: '4px 12px',
+                        borderRadius: '16px',
+                        fontSize: '12px',
+                        color: '#333'
+                      }}
+                    >
+                      #{topic}
+                    </span>
+                  ))}
+                </div>
+              )}
+              
+              {/* 发布人信息和时间 - 移到下方，紧挨在话题标签上方 */}
+              <div
+                style={{
+                  fontSize: 12,
+                  color: '#666',
+                  marginTop: '8px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <span>
+                  发布人：{post.author_name || `用户#${post.user_id || '未知'}`}
+                </span>
+                <span>{formatDateTime(post.created_at) || '刚刚'}</span>
+              </div>
+              
+              {/* 显示推荐来源 */}
+              <div style={{
+                fontSize: 10,
+                color: '#999',
+                marginTop: '4px',
+                textAlign: 'right'
+              }}>
+                来源：今日头条
+              </div>
             </div>
           );
         })}
@@ -424,4 +444,4 @@ function PostList() {
   );
 }
 
-export default PostList;
+export default Recommend;

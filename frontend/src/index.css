@@ -5,124 +5,48 @@
 *::after {
   box-sizing: border-box; /* 使用 border-box 盒模型 */
 }
+
 /* 基础字体和背景色 */
-/* 优先使用系统默认字体，设置行高为字体大小1.5倍，默认字体颜色深灰色，背景颜色浅灰色 */
 :root {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   line-height: 1.5;
   color: #111827;
-  background-color: #f3f4f6;
+  background-color: #ffffff;
 }
+
 /* 让 body 和 #root 占满全屏高度 */
 body {
   margin: 0;
   min-height: 100vh;
 }
-/* 让 #root 占满全屏高度 */
+
 #root {
   min-height: 100vh;
 }
 
 /* 页面主容器（App 里已经有 max-width，这里只是兜底） */
 .app-container {
-  max-width: 640px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 16px;
 }
 
 /* 顶部导航 */
 nav {
-  position: sticky;                       /* 粘性定位，滚动时固定在顶部 */
-  top: 0;                                 /* 距离顶部0 */
-  z-index: 10;                            /* 确保在其他内容之上 */
-  background-color: #ffffffcc;          /* 半透明白色背景 */
-  backdrop-filter: blur(6px);             /* 背景模糊效果 */
-  padding: 8px 4px;                       /* 内边距 */
-  border-bottom: 1px solid #e5e7eb;     /* 底部边框 */
+  position: sticky; /* 粘性定位 */
+  top: 0; /* 固定在顶部 */
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.8); /* 半透明背景 */
+  backdrop-filter: blur(6px); /* 背景模糊效果 */
+  padding: 10px 16px; /* 增加内边距 */
+  /* border-bottom: 1px solid #e5e7eb; /* 底部边框已移除 */
 }
 
-/* 链接 */
-a {
-  color: #2563eb;
+/* 富文本编辑器中的图片样式 */
+.ql-editor img {
+  max-width: 100% !important;
+  height: auto !important;
 }
 
-/* 按钮基础样式 */
-button {
-  cursor: pointer;                                                               /* 鼠标悬停时显示手型光标 */
-  border-radius: 999px;                                                          /* 圆角按钮 */
-  border: none;                                                                  /* 无边框 */
-  padding: 8px 16px;                                                             /* 内边距 */
-  background: linear-gradient(135deg, #2563eb, #3b82f6);                     /* 渐变背景 */
-  color: #fff;                                                                 /* 白色文字 */
-  font-size: 14px;                                                               /* 14px 字体大小 */
-  font-weight: 500;                                                              /* 中等字体粗细 */
-  transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.15s ease;     /* 平滑过渡效果 */
-}
-/* 禁用状态的按钮样式：半透明，默认光标 */
-button[disabled] {
-  opacity: 0.6;
-  cursor: default;
-}
-/* 鼠标悬停时的按钮样式 */
-button:not([disabled]):active {
-  transform: scale(0.97);                                   /* 按钮按下时缩小 */
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);            /* 添加阴影效果 */
-}
-
-/* 输入框 / 文本域 */
-input,
-textarea {
-  width: 100%;                                                 /* 宽度100% */
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;  /* 平滑过渡效果 */
-}
-/* 输入框 / 文本域 聚焦时的样式 */
-input:focus,
-textarea:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 1px #2563eb33;  
-}
-
-/* 卡片通用样式 */
-.card {
-  background-color: #fff;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  padding: 12px;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
-}
-
-/* 小标题 */
-.section-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 8px 0 12px;
-}
-
-/* 小标签 */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background-color: #eff6ff;
-  color: #1d4ed8;
-  font-size: 11px;
-}
-
-/* 针对窄屏做一点间距优化 */
-@media (max-width: 480px) {
-  .app-container {             /* 页面主容器 */
-    padding: 12px;             /* 减小内边距 */
-  }
-
-  nav {                        /* 顶部导航 */
-    padding-inline: 0;         /* 去掉左右内边距 */
-  }
-}
 

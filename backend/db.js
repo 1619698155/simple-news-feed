@@ -25,6 +25,7 @@ db.serialize(() => {
       user_id INTEGER,
       content TEXT NOT NULL,
       images TEXT, -- 存 JSON 字符串，如 ["url1","url2"]
+      topics TEXT, -- 存 JSON 字符串，如 ["话题1","话题2"]
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(user_id) REFERENCES users(id)
