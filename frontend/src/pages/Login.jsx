@@ -23,6 +23,7 @@ function Login({ onLoginSuccess }) {
         token: data.token,
         user: data.user,
       };
+      // 登录成功后保存登录信息至浏览器本地存储
       localStorage.setItem('auth', JSON.stringify(authData));
 
       // 通知父组件（App）更新状态
@@ -52,7 +53,6 @@ function Login({ onLoginSuccess }) {
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {/* 顶部渐变背景 */}
       </div>
       
       {/* 主要内容区域 */}

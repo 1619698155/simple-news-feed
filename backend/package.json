@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node index.js",
+    "start": "nodemon index.js",
     "dev": "node index.js"
   },
   "dependencies": {
@@ -18,3 +18,5 @@
     "sqlite3": "^5.1.7"
   }
 }
+
+
