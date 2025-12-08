@@ -15,15 +15,15 @@
     状态管理：React 内置 useState / useEffect<br>
     样式：原生 CSS + 少量内联样式，针对移动端优化（meta viewport、自适应宽度）<br>
     选择原因：<br>
-          React 是目前前端领域最主流的视图框架之一，React Router功能强大且易于使用。<br>
+          React 是目前前端领域最主流的视图框架之一，React Router功能强大且易于使用；React Hooks库实现逻辑相对简单，适用于本项目基本要求。<br>
           Vite 开发体验快、配置简单。<br>
-          原生 CSS 能够满足本项目的 UI 需求。<br>
+          原生 CSS 能够满足本项目的基本 UI 需求。<br>
 2.2 后端<br>
     运行时：Node.js<br>
     框架：Express<br>
     数据库：SQLite（文件型数据库）<br>
     选择原因：<br>
-          Node.js 允许你使用 JavaScript 编写后端代码，便于实现全栈操作。<br>
+          Node.js 允许使用 JavaScript 编写后端代码，便于实现全栈操作。<br>
           Express 提供强大的路由，中间件等功能，避免引入过多抽象，能快速构建后端API。<br>
           SQLite 免安装、跨平台，作为暂定的数据库方案。<br>
 
@@ -59,8 +59,8 @@
 4. 网站进入方式<br>
 4.1 当前调试方法：<br>
 （1）在其中一个terminal：（在simple-news-feed目录）<br>
-      cd backend<br>
-      npm run dev<br>
+         cd backend<br>
+         npm run dev<br>
    此时终端应该会出现Backend server is running on http://localhost:3000，说明后端部分调试成功。<br>
 （2）在另一个terminal：（在simple-news-feed目录）<br>
       cd frontend<br>
@@ -150,32 +150,33 @@
    GET /topics/recommend?postId=xxx：根据内容推荐话题<br>
 
 7. 前端主要页面说明<br>
-    首页 /：显示当前登录用户信息 + 信息流列表（PostList）。<br>
-    登录 /login：输入用户名密码，调用 /auth/login，保存 token。<br>
-    注册 /register：调用 /auth/register。<br>
-    发帖 /post/new：需要登录；文本 + 图片 URL（每行一条）。<br>
-    详情 /post/:id：展示全文和所有图片；如果是作者，提供“编辑”入口。<br>
-    编辑 /post/:id/edit：加载原内容后编辑并保存。<br>
+      首页 /：显示当前登录用户信息 + 信息流列表（PostList）。<br>
+      登录 /login：输入用户名密码，调用 /auth/login，保存 token。<br>
+      注册 /register：调用 /auth/register。<br>
+      发帖 /post/new：需要登录；文本 + 图片 URL（每行一条）。<br>
+      详情 /post/:id：展示全文和所有图片；如果是作者，提供“编辑”入口。<br>
+      编辑 /post/:id/edit：加载原内容后编辑并保存。<br>
 
 8. 当前还存在的部分问题，准备继续完成的内容以及后续优化方向（大致对应“挑战”部分）<br>
-    富文本编辑器（已完成）<br>
-    AI 自动打标签与相关推荐<br>
-    下拉刷新、性能优化（LCP、FPS）<br>
-    真正的文件上传与 CDN 存储：可能需要借助时尚现有的云服务如七牛云？<br>
-    使用 JWT、密码哈希、安全加固等<br>
-    目前得依赖代码调试才能进入前端网页，后续需要想办法自己生成一个网址就能直接进入<br>
-    进一步挖掘项目深度与技术难点<br>
+   部分疑问：<br>
+      （1）真正的文件上传与云端存储，是不是可能需要借助现有的云服务如七牛云？<br>
+      （2）基于目前的项目规模，暂时判断不需要配置状态管理库（如 Redux Toolkit / Zustand）。如果对此有建议或要求请及时提出。<br>
+   计划有待进一步完成的内容：<br>
+      （2）AI 自动打标签与相关推荐<br>
+      （3）下拉刷新、性能优化（LCP、FPS）<br>
+      （4）使用 JWT、密码哈希、安全加固等<br>
+      （5）目前得依赖代码调试才能进入前端网页，后续需要想办法自己生成一个网址就能直接进入<br>
+      （6）进一步挖掘项目深度与技术难点<br>
     
 
 PS：问题（bug）记录与解决<br>
 1. react-quill 组件安装出错<br>
    解决方法：确认 React 版本问题，必须是 16/17/18 版本之一，最好是 React18。版本设置可以在 package.json 里修改。<br>
             或者 react 版本过高了，可以降到 18 版本（在fontend目录输入npm install react@18 react-dom@18指令）再重新进行安装（npm install react-quill）。<br>
-2. 发布的文字前后带有<p>和</p>，比如说我发的是您好，却显示成了<p>您好</p>。<br>
-   原因：列表页直接显示 {post.content} ， 所以页面就真的把 "<p>您好</p>" 当成普通文字输出了<br>
+2. 发布的文字前后带有标签符<br>
+   原因：列表页直接显示 {post.content} ， 所以页面就真的把HTML标签符当成普通文字输出了<br>
    解决方法：<br>
       首页显示卡片：剥离 HTML 标签，如在 PostList.jsx 文件中<br>
-         // 去掉 HTML 标签，把 <p>您好</p> 变成 “您好”<br>
          function stripHtml(html) {<br>
            if (!html) return '';<br>
            return html.replace(/<[^>]+>/g, ''); // 简单正则清理所有标签<br>
