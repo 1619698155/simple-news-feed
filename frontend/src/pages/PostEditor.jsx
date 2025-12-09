@@ -79,10 +79,6 @@ function PostEditor({ token }) {
   // 加载状态
   const [loading, setLoading] = useState(false);
   const [loadingPost, setLoadingPost] = useState(false);
-  const [loadingRecommend, setLoadingRecommend] = useState(false); // 推荐话题加载状态
-  
-  // 推荐话题相关
-  const [recommendedTopics, setRecommendedTopics] = useState([]);
   
   // 错误和成功信息
   const [error, setError] = useState('');
@@ -214,29 +210,7 @@ function PostEditor({ token }) {
     }
   }, [quillRef, imageHandler]);
 
-  // 处理推荐话题
-  async function handleRecommendTopics() {
-    setError('');
-    setRecommendedTopics([]);
-    if (!content || content.trim() === '') {
-      setError('请先填写文章内容再推荐话题');
-      return;
-    }
-    if (!token) {
-      setError('请先登录后再推荐话题');
-      return;
-    }
 
-    setLoadingRecommend(true);
-    try {
-      const { topics } = await apiRecommendTopics({ content, token });
-      setRecommendedTopics(topics);
-    } catch (e) {
-      setError(e.message || '推荐话题失败');
-    } finally {
-      setLoadingRecommend(false);
-    }
-  }
 
   // 提交表单，创建或更新帖子
   async function handleSubmit(e) {
@@ -250,21 +224,44 @@ function PostEditor({ token }) {
     console.log('从imageText解析的images数组:', imagesFromText);
     
     // 从富文本内容中提取所有图片URL，确保不丢失任何图片
-    const imagesFromContent = content.match(/https?:\/\/[^\s"'<>]+/g) || [];
+    const imagesFromContent = [];
+    // 支持双引号、单引号和无引号的src属性
+    const imgRegex = /<img[^>]+src=(?:"([^"]+)"|'([^']+)'|([^\s>]+))/g;
+    let match;
+    while ((match = imgRegex.exec(content)) !== null) {
+      const imgUrl = match[1] || match[2] || match[3];
+      if (imgUrl) {
+        imagesFromContent.push(imgUrl);
+      }
+    }
     console.log('从富文本内容提取的图片URL:', imagesFromContent);
+    console.log('富文本内容:', content);
     
     // 合并两个来源的图片URL，并去重
     const allImages = [...new Set([...imagesFromText, ...imagesFromContent])];
     console.log('合并去重后的images数组:', allImages);
 
     try {
+      // 自动推荐话题
+      let topicsToUse = [];
+      if (content && content.trim() !== '') {
+        try {
+          const { topics } = await apiRecommendTopics({ content, token });
+          topicsToUse = topics;
+          console.log('自动推荐的话题:', topicsToUse);
+        } catch (topicError) {
+          console.log('话题推荐失败，继续提交:', topicError.message);
+          // 话题推荐失败不影响帖子发布
+        }
+      }
+
       let result;
       if (isEditMode) {
         result = await apiUpdatePost({ // 编辑模式，提交数据，调用更新接口
           id,
           content,
           images: allImages,
-          topics: recommendedTopics, // 提交推荐话题
+          topics: topicsToUse, // 提交推荐话题
           token,
         });
         setSuccessMsg('修改成功！即将返回首页...');
@@ -272,7 +269,7 @@ function PostEditor({ token }) {
         result = await apiCreatePost({
           content,
           images: allImages,
-          topics: recommendedTopics, // 提交推荐话题
+          topics: topicsToUse, // 提交推荐话题
           token,
         });
         setSuccessMsg('发布成功！即将返回首页...');
@@ -293,8 +290,47 @@ function PostEditor({ token }) {
   }
 
   return (
-    <div>
-      <h2>{isEditMode ? '编辑短图文' : '发布短图文'}</h2> {/* 根据模式显示标题 */}
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: 'calc(100vh - 60px)', // 固定高度，减去底部导航栏高度
+      paddingBottom: '10px', // 额外底部内边距，确保内容不紧贴导航栏
+    }}>
+      {/* 标题和提交按钮容器 */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12
+      }}>
+        <h2>{isEditMode ? '编辑短图文' : '发布短图文'}</h2> {/* 根据模式显示标题 */}
+        
+        {/* 提交按钮 - 移到标题右侧 */}
+        <button 
+          type="button" 
+          onClick={() => handleSubmit({ preventDefault: () => {} })}
+          disabled={loading} 
+          style={{
+            backgroundColor: 'transparent',
+            color: 'inherit',
+            border: 'none',
+            fontSize: 'inherit',
+            fontWeight: 'inherit',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.7 : 1,
+            padding: 0,
+            margin: 0,
+          }}
+        >
+          {loading
+            ? isEditMode
+              ? '正在保存...'
+              : '正在发布...'
+            : isEditMode
+            ? '保存修改'
+            : '发布'}
+        </button>
+      </div>
 
       {loadingPost ? (
         <p>正在加载原内容...</p>
@@ -304,41 +340,58 @@ function PostEditor({ token }) {
           style={{
             display: 'flex',
             flexDirection: 'column',
+            flexGrow: 1,
             gap: 12,
-            marginTop: 12,
+            overflow: 'hidden', // 防止内容溢出
           }}
         >
-          <div>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            flexGrow: 1,
+            overflow: 'hidden', // 防止内容溢出
+          }}>
             <label style={{ display: 'block', marginBottom: 4 }}>
               文本内容（支持富文本）：
             </label>
 
             {/* 自定义工具栏配置的 ReactQuill */}
-            <ReactQuill
-              theme="snow"
-              value={content}
-              onChange={setContent}
-              placeholder="写点什么吧，支持加粗、标题、列表等..."
-              style={{ height: '40vh', marginBottom: 32, border: 'none' }}
-              modules={{
-                toolbar: [
-                  [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                  ['bold', 'italic', 'underline'],
-                  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                  ['link'],
-                  ['image'],  // 添加图片按钮
-                  ['clean']
-                ]
-              }}
-              formats={[
-                'header',
-                'bold', 'italic', 'underline',
-                'list', 'bullet',
-                'link',
-                'image'
-              ]}
-              ref={quillRef}
-            />
+            <div style={{ 
+              flexGrow: 1, 
+              overflow: 'hidden', // 确保容器不溢出
+              display: 'flex',
+              flexDirection: 'column',
+            }}>
+              <ReactQuill
+                theme="snow"
+                value={content}
+                onChange={setContent}
+                placeholder="写点什么吧，支持加粗、标题、列表等..."
+                style={{
+                  flexGrow: 1,
+                  border: 'none',
+                  height: '100%', // 让编辑器填满容器
+                }}
+                modules={{
+                  toolbar: [
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link'],
+                    ['image'],  // 添加图片按钮
+                    ['clean']
+                  ]
+                }}
+                formats={[
+                  'header',
+                  'bold', 'italic', 'underline',
+                  'list', 'bullet',
+                  'link',
+                  'image'
+                ]}
+                ref={quillRef}
+              />
+            </div>
           </div>
           
           {/* 隐藏图片URL输入框，保留状态以支持表单提交 */}
@@ -348,71 +401,7 @@ function PostEditor({ token }) {
             onChange={(e) => setImageText(e.target.value)}
           />
           
-
-          {/* 推荐话题功能 */}
-          <div style={{ marginTop: 12 }}>
-            <button
-              type="button"
-              onClick={handleRecommendTopics}
-              disabled={loadingRecommend || !content.trim()}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-              }}
-            >
-              {loadingRecommend ? '正在推荐...' : '推荐话题'}
-            </button>
-            {recommendedTopics.length > 0 && (
-              <div style={{ marginTop: 8 }}>
-                <p style={{ marginBottom: 4 }}>推荐话题：</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {recommendedTopics.map((topic, index) => (
-                    <span
-                      key={index}
-                      onClick={() => setContent((prev) => `${prev} #${topic}`)}
-                      style={{
-                        padding: '6px 12px',
-                        backgroundColor: '#e9ecef',
-                        borderRadius: '20px',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        color: '#333',
-                        border: '1px solid #ced4da',
-                      }}
-                    >
-                      #{topic}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <button type="submit" disabled={loading} style={{
-            width: '100%',
-            backgroundColor: '#ff3333',
-            color: 'white',
-            border: 'none',
-            borderRadius: '25px',
-            padding: '12px 24px',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading ? 0.7 : 1,
-            transition: 'all 0.3s ease'
-          }}>
-            {loading
-              ? isEditMode
-                ? '正在保存...'
-                : '正在发布...'
-              : isEditMode
-              ? '保存修改'
-              : '发布'}
-          </button>
+          {/* 推荐话题功能已集成到发布流程，无需手动触发 */}
         </form>
       )}
 

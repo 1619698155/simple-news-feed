@@ -16,10 +16,12 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import PostEditor from './pages/PostEditor';
 import PostDetail from './pages/PostDetail';
-import Recommend from './pages/Recommend';
+import PostList from './pages/PostList';
+import ProfilePage from './pages/Profile';
+
 
 // 导航栏组件
-function NavBar({ user }) { // 接受一个属性：user
+function NavBar({ user }) { // 接受属性user
   const location = useLocation(); // 使用 useLocationHook 获取当前的路由位置信息
   
   // 处理搜索功能
@@ -44,14 +46,14 @@ function NavBar({ user }) { // 接受一个属性：user
       style={{
         position: 'sticky',                    // 固定在页面顶部
         top: 0,                                // 顶部对齐
-        zIndex: 1,                            // 降低层级，确保图片在底层
-        backdropFilter: 'blur(6px)',           // 背景模糊效果
+        zIndex: 100,                           // 确保导航栏在顶部显示
         minHeight: '10vh',                     // 最小高度为浏览器高度的10%
         display: 'flex',                       // 使用flex布局
         flexDirection: 'column',               // 垂直排列
         border: 'none',                        // 确保无边框
         outline: 'none',                       // 确保无轮廓
-        boxShadow: 'none'                      // 确保无阴影效果
+        boxShadow: 'none',                     // 确保无阴影效果
+        backgroundColor: '#e50914'           // 直接设置红色背景，避免虚化效果
       }}
     >
       {/* 第一行：Logo、搜索框、发布、用户信息 */}
@@ -61,7 +63,7 @@ function NavBar({ user }) { // 接受一个属性：user
           alignItems: 'center',
           width: '100%',
           backgroundColor: '#e50914',           // 第一行背景颜色为红色
-          padding: '10px 20px',                 // 内边距，与底部导航栏保持一致的左右间距
+          padding: '10px 0',                    // 只保留上下内边距，左右内边距设为0
           color: 'white', // 设置文字颜色为白色，确保在红色背景上的可读性
           boxSizing: 'border-box'               // 确保padding不影响宽度
         }}>
@@ -107,8 +109,6 @@ function NavBar({ user }) { // 接受一个属性：user
             }}
           />
         </div>
-
-        {/* 移除了发布功能 */}
         
         {/* 用户信息 */}
         <div style={{ marginLeft: '15px' }}>
@@ -119,26 +119,6 @@ function NavBar({ user }) { // 接受一个属性：user
               </Link>
             </>
           )}
-        </div>
-      </div>
-      
-      {/* 第二行：关注、推荐、更多，与上一行间距为网页高度的5% */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', // 两端对齐
-          width: '100%',
-          backgroundColor: 'white', // 第二行背景颜色为白色
-          padding: '10px 20px', // 内边距，与底部导航栏保持一致的左右间距
-          marginTop: '0', // 去掉顶部间距
-          border: 'none', // 确保无边框
-          outline: 'none', // 确保无轮廓
-          boxShadow: 'none', // 确保无阴影效果
-          boxSizing: 'border-box' // 确保padding不影响宽度
-        }}>
-        <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between', gap: '20px' }}>  
-          <Link to="/follow" style={{...linkStyle('/follow'), textAlign: 'center', color: 'black'}}>关注</Link>
-          <Link to="/recommend" style={{...linkStyle('/recommend'), textAlign: 'center', color: 'black'}}>推荐</Link>
-          <Link to="/more" style={{...linkStyle('/more'), textAlign: 'center', color: 'black'}}>更多</Link>
         </div>
       </div>
     </nav>
@@ -204,8 +184,8 @@ function AppInner() {
         paddingBottom: '60px' // 添加底部内边距避免内容被底部导航栏遮挡
       }}
     >
-      {/* 只在指定页面显示顶部导航栏 */}
-      {(location.pathname === '/' || location.pathname === '/home' || location.pathname === '/follow' || location.pathname === '/recommend' || location.pathname === '/more') && <NavBar user={auth.user} />}
+      {/* 只在首页显示顶部导航栏 */}
+      {(location.pathname === '/' || location.pathname === '/home') && <NavBar user={auth.user} />}
       
       {/* 底部导航栏：首页、+、我的，固定在页面最底部 */}
       <div className="bottom-nav" style={{ 
@@ -261,43 +241,8 @@ function AppInner() {
           }
         />
         
-        {/* 推荐页面 */}
-        <Route
-          path="/recommend"
-          element={<Recommend user={auth.user} />}
-        />
-        
         {/* 底部导航栏相关路由 */}
-        <Route path="/user/profile" element={auth.user ? 
-          <div style={{ 
-            padding: '20px', 
-            textAlign: 'center', 
-            fontSize: '18px' 
-          }}> 
-            <div>{auth.user.username}的个人主页</div> 
-            <div style={{ marginTop: '15px' }}> 
-              <button onClick={handleLogout} style={{ 
-                backgroundColor: '#e50914', 
-                color: 'white', 
-                border: 'none', 
-                padding: '8px 16px', 
-                borderRadius: '4px', 
-                cursor: 'pointer', 
-                fontSize: '16px' 
-              }}>退出登录</button> 
-            </div> 
-          </div> : 
-          <div style={{ 
-            padding: '20px', 
-            textAlign: 'center', 
-            fontSize: '18px' 
-          }}> 
-            <Link to="/login" style={{ 
-              color: '#e50914', 
-              textDecoration: 'none' 
-            }}>点击登录</Link> 
-          </div> 
-        } />
+        <Route path="/user/profile" element={<ProfilePage user={auth.user} handleLogout={handleLogout} />} />
       </Routes>
     </div>
   );

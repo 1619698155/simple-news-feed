@@ -17,8 +17,8 @@ require('dotenv').config(); // 加载 .env 文件中的环境变量
 const app = express();
 // 将 CORS 中间件注册为全局中间件, 注册 Express 内置的中间件
 app.use(cors()); // 支持跨域
-app.use(express.json({ limit: '10mb' })); // 增加请求体大小限制到10MB，以支持较大文件上传
-app.use(express.urlencoded({ limit: '10mb', extended: true })); // 同时增加URL编码请求体的大小限制
+app.use(express.json({ limit: '50mb' })); // 增加请求体大小限制到50MB，以支持较大文件上传
+app.use(express.urlencoded({ limit: '50mb', extended: true })); // 同时增加URL编码请求体的大小限制
 
 // 配置 OpenAI 客户端
 const openai = new OpenAI({
@@ -412,7 +412,7 @@ function authMiddleware(req, res, next) {
   next();
 }
 
-// ★ 新增：图片上传接口（需要登录）
+// 图片上传接口（需要登录）
 // POST /upload/image
 // headers: Authorization: Bearer token
 // body: form-data, field: file
@@ -574,8 +574,7 @@ app.put('/posts/:id', authMiddleware, (req, res) => {
   });
 });
 
-// ======== 列表 & 详情接口（保持原样） ========
-
+// ======== 列表 & 详情接口========
 // GET /posts?offset=0&limit=10
 app.get('/posts', (req, res) => {
   const offset = parseInt(req.query.offset || '0', 10);

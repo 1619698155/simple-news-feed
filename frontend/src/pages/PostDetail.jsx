@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { apiGetPost } from '../api';
 
-// 注：之前使用的stripHtml函数已移除，现在直接使用富文本渲染
-
 function PostDetail({ currentUser }) {
   const { id } = useParams();
   const [post, setPost] = useState(null);
@@ -105,17 +103,43 @@ function PostDetail({ currentUser }) {
 
       {/* 内容层 - 同时包含文字和图片，保持富文本的原始结构 */}
       <div style={{ padding: '16px' }}>
-        {/* 使用dangerouslySetInnerHTML渲染完整的富文本内容，包括文字和图片 */}
+        {/* 使用dangerouslySetInnerHTML渲染完整的富文本内容，包括文字 */}
         <div
           style={{ 
             fontSize: '16px', 
             lineHeight: 1.8,
             color: '#333'
           }}
-          dangerouslySetInnerHTML={{ 
-            __html: (post.content || '') + '<style>img{max-width:100%;height:auto;display:block;}</style>'
+          dangerouslySetInnerHTML={{
+            __html: (post.content || '') + '<style>img{max-width:100%;height:auto;display:block;margin:12px 0;}</style>'
           }}
         />
+        
+        {/* 渲染图片数组中未在content中显示的图片 */}
+        {post.images && post.images.length > 0 && (
+          <div style={{ marginTop: '12px' }}>
+            {post.images.map((imageUrl, index) => {
+              // 检查图片是否已经在content中显示
+              if (!(post.content || '').includes(imageUrl)) {
+                return (
+                  <img
+                    key={index}
+                    src={imageUrl}
+                    alt={`图片${index + 1}`}
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                      display: 'block',
+                      marginBottom: '12px',
+                      borderRadius: '8px'
+                    }}
+                  />
+                );
+              }
+              return null;
+            })}
+          </div>
+        )}
       </div>
 
       {/* 推荐词条区域 - 在内容层下方显示已获取的推荐词条 */}
@@ -125,20 +149,24 @@ function PostDetail({ currentUser }) {
           borderTop: '1px solid #f0f0f0'
         }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {post.topics.map((topic, index) => (
-              <span 
-                key={index} 
-                style={{
-                  backgroundColor: '#f0f0f0',
-                  padding: '4px 12px',
-                  borderRadius: '16px',
-                  fontSize: '13px',
-                  color: '#666'
-                }}
-              >
-                #{topic}
-              </span>
-            ))}
+            {post.topics.map((topic, index) => {
+              // 确保话题标签以#开头，如果没有则添加
+              const formattedTopic = topic.startsWith('#') ? topic : `#${topic}`;
+              return (
+                <span 
+                  key={index} 
+                  style={{
+                    backgroundColor: '#f0f0f0',
+                    padding: '4px 12px',
+                    borderRadius: '16px',
+                    fontSize: '13px',
+                    color: '#666'
+                  }}
+                >
+                  {formattedTopic}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}

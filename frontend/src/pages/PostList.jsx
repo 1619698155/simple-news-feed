@@ -16,7 +16,7 @@ document.head.appendChild(style);
 
 const PAGE_SIZE = 5; // 每次加载 5 条
 
-// 把 SQLite 的 UTC 时间字符串转成本地时间字符串（解决差 8 小时）
+// 时间格式处理
 function formatDateTime(utcString) {
   if (!utcString) return '';
 
@@ -34,7 +34,7 @@ function formatDateTime(utcString) {
   });
 }
 
-function PostList() {
+function PostList({ user_id = null }) {
   const [posts, setPosts] = useState([]);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -57,7 +57,7 @@ function PostList() {
     setOffset(0);
     setHasMore(true);
     loadMore();
-  }, []); // 只在组件挂载时执行一次
+  }, [user_id]); // 当user_id变化时重新加载帖子
 
   // 下拉刷新事件处理函数
   const handleMouseDown = (e) => {
@@ -130,14 +130,22 @@ function PostList() {
         container.removeEventListener('mouseleave', handleMouseUp);
       }
     };
-  }, [loading, hasMore, isDragging, dragDistance, refreshing]); // 依赖项确保逻辑正确更新
+  }, [loading, hasMore, isDragging, dragDistance, refreshing, user_id]); // 依赖项确保逻辑正确更新
 
   // 通用数据加载函数，用于代码复用
   async function fetchPosts(currentOffset, isRefresh = false) {
     try {
-      console.log(`${isRefresh ? '刷新' : '加载更多'}帖子：offset=${currentOffset}, limit=${PAGE_SIZE}`);
-      const data = await apiGetPosts({ offset: currentOffset, limit: PAGE_SIZE });
+      console.log(`${isRefresh ? '刷新' : '加载更多'}帖子：offset=${currentOffset}, limit=${PAGE_SIZE}, user_id=${user_id}`);
+      const data = await apiGetPosts({ offset: currentOffset, limit: PAGE_SIZE, user_id });
       console.log(`API返回数据：${data.length}条，ID=${data.map(p => p.id).join(', ')}`);
+      console.log('API返回数据详情：', data);
+      
+      // 前端额外过滤，确保只显示当前用户的帖子
+      if (user_id) {
+        const filteredData = data.filter(post => post.user_id === user_id);
+        console.log(`前端过滤后数据：${filteredData.length}条，ID=${filteredData.map(p => p.id).join(', ')}`);
+        return filteredData;
+      }
       
       return data;
     } catch (e) {
@@ -262,30 +270,33 @@ function PostList() {
       
       <div style={{ marginTop: refreshing || isDragging ? -10 : 0, transition: 'margin-top 0.3s ease' }}>
         <h3 className="post-title"></h3>
-      
-      {/* 话题推荐区域已移到每个帖子下方显示 */}
 
       {posts.length === 0 && !loading && <p className="empty-post-message">暂无内容，快去发布一条吧～</p>}
 
       <div className="post-container" style={{ 
         display: 'flex', 
         flexDirection: 'column', 
-        gap: 12
+        gap: 12,
+        width: '100%', 
+        padding: '0', 
+        boxSizing: 'border-box' 
       }}>
         {posts.map((post) => {
           // 现在直接使用dangerouslySetInnerHTML渲染富文本内容
-          // 省略了纯文本预览的生成代码
-
           return (
             <div
               key={post.id}
               className="card"
               style={{
-                height: '20vh', // 帖子模块高度为页面20%
-                borderRadius: 8,
+                height: '18vh', 
                 padding: 12,
-                display: 'flex', // 使用flex布局来分离文字和图片
+                display: 'flex', 
                 position: 'relative',
+                width: '100%', 
+                boxSizing: 'border-box', 
+                border: 'none', 
+                backgroundColor: 'transparent', 
+                boxShadow: 'none', 
               }}
             >
               <Link
@@ -297,67 +308,36 @@ function PostList() {
                   width: '100%',
                 }}
               >
-                {/* 文字内容占左侧80% */}
-                <div style={{ width: '80%', paddingRight: '8px', display: 'flex', flexDirection: 'column' }}>
+                {/* 文字内容占左侧78% */}
+                <div style={{ width: '78%', paddingRight: '8px', display: 'flex', flexDirection: 'column' }}>
                   {/* 标题或第一句话提取函数 */}
                   {(() => {
                     if (post.title) return post.title;
                     if (!post.content) return '';
                     
-                    // 移除HTML标签
-                    const plainText = post.content.replace(/<[^>]*>/g, '');
+                    // 处理HTML内容，提取第一行文字
+                    let firstLine = '';
                     
-                    // 提取第一个词语或短语的逻辑
-                    let firstWord = '';
-                    
-                    // 1. 先按换行符分割，取第一行
-                    let firstLine = plainText.split('\n')[0].trim();
-                    
-                    // 2. 按空格分割，取第一个词语
-                    if (firstLine.includes(' ')) {
-                      firstWord = firstLine.split(' ')[0].trim();
-                    } 
-                    // 3. 如果没有空格，按中文标点分割（如，。！？）
-                    else if (firstLine.match(/[，。！？]/)) {
-                      firstWord = firstLine.split(/[，。！？]/)[0].trim();
-                    } 
-                    // 4. 如果都没有，取前几个字符（最多20个）
-                    else {
-                      firstWord = firstLine.slice(0, 20).trim();
+                    // 1. 先按HTML标签分割，找到第一个有效内容
+                    const contentWithoutHtml = post.content.replace(/<[^>]*>/g, '\n');
+                    // 2. 按换行符分割，过滤空行，取第一个非空行
+                    const lines = contentWithoutHtml.split('\n').filter(line => line.trim() !== '');
+                    if (lines.length > 0) {
+                      firstLine = lines[0].trim();
                     }
                     
-                    return firstWord;
+                    // 3. 如果没有有效内容，使用默认值
+                    if (!firstLine) {
+                      firstLine = '无标题';
+                    }
+                    
+                    return firstLine.slice(0, 50).trim();
                   })()}
                   
                   {/* 空行 - 与上方文字保持距离 */}
                   <div style={{ marginBottom: '8px' }}></div>
                   
-                  {/* 帖子关联话题显示，在发布人和发布时间上方 */}
-                  {post.topics && post.topics.length > 0 && (
-                    <div style={{ 
-                      marginBottom: '4px',
-                      maxWidth: '100%',
-                      wordBreak: 'break-all'
-                    }}>
-                      {post.topics.map((topic, index) => (
-                        <span 
-                          key={index} 
-                          style={{
-                            backgroundColor: '#f0f0f0',
-                            padding: '2px 8px',
-                            borderRadius: '12px',
-                            fontSize: '11px',
-                            color: '#333',
-                            marginRight: '4px',
-                            marginBottom: '4px',
-                            display: 'inline-block'
-                          }}
-                        >
-                          #{topic}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  {/* 帖子关联话题已移至详情页显示，此处不再显示 */}
                   
                   {/* 发布人和发布时间 */}
                   <div style={{ fontSize: 12, color: '#999', marginTop: 'auto' }}>
@@ -365,23 +345,55 @@ function PostList() {
                   </div>
                 </div>
 
-                {/* 图片内容占右侧20%，上下对齐模块边缘 */}
-                {post.images && post.images.length > 0 ? (
-                  <div style={{ width: '20%', height: '100%', display: 'flex', alignItems: 'stretch' }}>
-                    <img
-                      src={post.images[0]}
-                      alt="缩略图"
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        borderRadius: 6,
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div style={{ width: '20%' }}></div>
-                )}
+                {/* 图片内容占右侧22%，上下对齐模块边缘 */}
+                {(() => {
+                  // 首先尝试从images数组获取图片
+                  if (post.images && post.images.length > 0) {
+                    return (
+                      <div style={{ width: '22%', height: '100%', display: 'flex', alignItems: 'stretch' }}>
+                        <img
+                          src={post.images[0]}
+                          alt="缩略图"
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            borderRadius: 6,
+                          }}
+                        />
+                      </div>
+                    );
+                  }
+                  
+                  // 如果images数组为空，尝试从content中提取图片
+                  if (post.content) {
+                    // 支持双引号、单引号和无引号的src属性
+                    const imgRegex = /<img[^>]+src=(?:"([^"]+)"|'([^']+)'|([^\s>]+))/g;
+                    const match = imgRegex.exec(post.content);
+                    if (match) {
+                      const imgUrl = match[1] || match[2] || match[3];
+                      if (imgUrl) {
+                        return (
+                          <div style={{ width: '20%', height: '100%', display: 'flex', alignItems: 'stretch' }}>
+                            <img
+                              src={imgUrl}
+                              alt="缩略图"
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                borderRadius: 6,
+                              }}
+                            />
+                          </div>
+                        );
+                      }
+                    }
+                  }
+                  
+                  // 没有图片时显示空白占位
+                  return <div style={{ width: '20%' }}></div>;
+                })()}
               </Link>
             </div>
           );
