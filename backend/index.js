@@ -667,6 +667,26 @@ app.use((err, req, res, next) => {
   });
 });
 
+// 导入生成mock数据的脚本
+const generateMockData = require('./generate-mock-data');
+
+// 检查数据库中是否有帖子数据，如果没有则生成mock数据
+function checkAndGenerateMockData() {
+  db.get('SELECT COUNT(*) AS count FROM posts', (err, row) => {
+    if (err) {
+      console.error('检查帖子数量失败:', err);
+      return;
+    }
+    
+    if (row.count === 0) {
+      console.log('数据库中没有帖子数据，开始生成mock数据...');
+      generateMockData();
+    } else {
+      console.log(`数据库中已有 ${row.count} 条帖子数据，跳过生成mock数据`);
+    }
+  });
+}
+
 // 启动服务器 
 //const PORT = 3000;
 const PORT = process.env.PORT || 3000;
@@ -674,4 +694,7 @@ app.listen(PORT, () => { // 调用 app.listen 方法，使服务器开始监听�
   console.log(
     `Backend server is running on http://localhost:${PORT}`
   );
+  
+  // 检查并生成mock数据
+  checkAndGenerateMockData();
 });
