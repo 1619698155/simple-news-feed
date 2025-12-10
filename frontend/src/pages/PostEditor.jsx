@@ -7,7 +7,7 @@ import {
   apiUpdatePost,
   apiGetPost,
   apiUploadImage,
-  // apiRecommendTopics, // 导入推荐话题 API (暂时注释)
+  //apiRecommendTopics, 
 } from '../api';
 
 // 引入 ReactQuill 及样式，用于富文本编辑器
@@ -242,19 +242,19 @@ function PostEditor({ token }) {
     console.log('合并去重后的images数组:', allImages);
 
     try {
-      // 自动推荐话题 (暂时注释)
-      // let topicsToUse = [];
-      // if (content && content.trim() !== '') {
-      //   try {
-      //     const { topics } = await apiRecommendTopics({ content, token });
-      //     topicsToUse = topics;
-      //     console.log('自动推荐的话题:', topicsToUse);
-      //   } catch (topicError) {
-      //     console.log('话题推荐失败，继续提交:', topicError.message);
-      //     // 话题推荐失败不影响帖子发布
-      //   }
-      // }
-
+      /*
+       let topicsToUse = [];
+       if (content && content.trim() !== '') {
+         try {
+           const { topics } = await apiRecommendTopics({ content, token });
+           topicsToUse = topics;
+           console.log('自动推荐的话题:', topicsToUse);
+         } catch (topicError) {
+           console.log('话题推荐失败，继续提交:', topicError.message);
+           // 话题推荐失败不影响帖子发布
+         }
+       }
+      */
       let result;
       if (isEditMode) {
         result = await apiUpdatePost({ // 编辑模式，提交数据，调用更新接口
